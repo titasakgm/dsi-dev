@@ -1,0 +1,46 @@
+#!/usr/bin/ruby
+
+require 'cgi'
+require 'postgres'
+require 'net/http'
+
+c = CGI::new
+kw = c['kw']
+
+def google(kw)
+
+  w = Net::HTTP.new("maps.google.co.th")
+  req = "/maps?q=#{kw}"
+
+  resp,data = w.get(req)
+
+  data = data.gsub(/\}/,"\n")
+
+  lon = lat = nil
+
+  data.each do |line|
+    l = line.chomp.gsub(/<.*?>/,'').strip
+    if l =~ /viewport\:\{center\:/
+      ll = l.split(/lat/).last.tr(':','').split(/\,lng/)
+      lon = ll.last
+      lat = ll.first
+      break
+    end
+  end
+  lonlat = [lon,lat]
+end
+
+lonlat = google(kw)
+
+name = kw
+lon = lonlat.first
+lat = lonlat.last
+
+msg = "1 record found"
+data = "{'msg':'#{msg}','name':'#{name}','lon':'#{lon}','lat':'#{lat}'}"
+
+print <<EOF
+Content-type: text/html
+
+#{data}
+EOF

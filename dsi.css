@@ -1,0 +1,177 @@
+.dsi {
+  background-image: url("img/logo_dsi.gif") !important;
+}
+
+.logo {
+  text-align: right;
+  margin-right: 10px;
+  font-size: large;
+  color: "#0156B5"
+}
+
+img {
+  border: none;
+}
+
+div.olControlMousePosition {
+  font-weight: bold;
+  font-size: 10pt !important;
+  color: yellow;
+  padding-bottom: 50px !important;
+  padding-right: 10px !important;
+}
+
+div.olControlGraticule {
+  strokeColor: "#FF0000",
+  strokeWidth: 3,
+  strokeOpacity: 0.5
+}
+
+div.olControlScaleLine {
+  font-weight: bold;
+  font-size: 10pt !important;
+  color: yellow;
+  padding-bottom: 40px !important;
+}
+
+.olControlScaleLineTop {
+  border: solid 2px white !important;
+  border-top: none !important;
+}
+
+.olControlScaleLineBottom {
+  border: solid 2px white !important;
+  border-bottom: none !important;
+}
+
+div.olLayerGoogleCopyright {
+  padding-bottom: 20px !important;
+  padding-left: 50px !important;
+}
+
+.zoomfull {
+  background-image: url("img/icon_zoomfull.png") !important;
+}
+
+.zoomin {
+  background-image: url("img/icon_zoomin.png") !important;
+}
+
+.zoomout {
+  background-image: url("img/icon_zoomout.png") !important;
+}
+
+.pan {
+  background-image: url("img/icon_pan.png") !important;
+}
+
+.drawpoint {
+  background-image: url("img/draw_point_off.png") !important;
+}
+
+.drawline {
+  background-image: url("img/draw_line_off.png") !important;
+}
+
+.drawpolygon {
+  background-image: url("img/draw_polygon_off.png") !important;
+}
+
+.modifyfeature {
+  background-image: url("img/icon_modify_feature.png") !important;
+}
+
+.deletefeature {
+  background-image: url("img/icon_delete.png") !important;
+}
+
+.deleteallfeature {
+  background-image: url("img/delete.png") !important;
+}
+
+.info {
+  background-image: url("img/icon_info.png") !important;
+}
+
+.back {
+  background-image: url("img/resultset_previous.png") !important;
+}
+
+.next {
+  background-image: url("img/resultset_next.png") !important;
+}
+
+.show_gsv {
+  background-image: url("img/icon_point_blue.png") !important;
+}
+
+.bing {
+  background-image: url("img/icon_bing.png") !important;
+}
+
+.google {
+  background-image: url("img/icon_google.png") !important;
+}
+
+.google_earth {
+  background-image: url("img/icon_google_earth.png") !important;
+}
+
+.grid1 {
+  background-image: url("img/icon_grid_1.png") !important;
+}
+
+.grid2 {
+  background-image: url("img/icon_grid_2.png") !important;
+}
+
+.dem {
+  background-image: url("img/icon_dem.png") !important;
+}
+
+.changwat {
+  background-image: url("img/icon_changwat.png") !important;
+}
+
+.amphur {
+  background-image: url("img/icon_amphur.png") !important;
+}
+
+.tambon {
+  background-image: url("img/icon_tambon.png") !important;
+}
+
+.village {
+  background-image: url("img/icon_village.png") !important;
+}
+
+.rforest {
+  background-image: url("img/icon_rforest.png") !important;
+}
+
+.npark {
+  background-image: url("img/icon_npark.png") !important;
+}
+
+.measure_length {
+  background-image: url("img/icon_measure_length.png") !important;
+}
+.measure_area {
+  background-image: url("img/icon_measure_area.png") !important;
+}
+
+.print_preview {
+  background-image: url("img/icon_print_preview.png") !important;
+}
+
+.print {
+  background-image: url("img/icon_print.png") !important;
+}
+
+.select_feat {
+  background-image: url("img/icon_select.gif") !important;
+}
+
+.close {
+  background-image: url("img/icon_close.png") !important;
+}
