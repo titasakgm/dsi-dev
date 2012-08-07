@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.0">
+  <Document>
+    <name>KML Samples</name>
+    <open>1</open>
+    <description>Unleash your creativity with the help of these examples!</description>
+    <Style id="marker_pink">
+      <IconStyle>
+        <Icon>
+          <href>http://203.151.201.129/dsix/img/icon_marker_pink.png</href>
+        </Icon>
+      </IconStyle>
+    </Style>
+    <Folder>
+      <name>Paths</name>
+      <visibility>0</visibility>
+      <description>DSI Desc</description>
+      <Placemark>
+        <name>DSI</name>
+        <styleUrl>#marker_pink</styleUrl>
+        <description>Just another blue icon.</description>
+        <Point>
+          <coordinates>100.5657899,13.89071588</coordinates>
+        </Point>
+      </Placemark>
+    </Folder>
+  </Document>
+</kml>

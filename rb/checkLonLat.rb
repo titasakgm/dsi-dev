@@ -2,7 +2,8 @@
 # encoding: utf-8
 
 require 'cgi'
-require 'postgres'
+require 'rubygems'
+require 'pg'
 
 def dms2dd(dd,mm,ss)
   d = dd.to_f

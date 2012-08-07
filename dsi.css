@@ -6,9 +6,12 @@
   text-align: right;
   margin-right: 10px;
   font-size: large;
-  color: "#0156B5"
+  color: "#0156B5";
 }
 
+.add_kml {
+  background-image: url("img/icon_kml.png") !important; 
+}
 img {
   border: none;
 }

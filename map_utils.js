@@ -8,11 +8,17 @@ Ext.Loader.setConfig({
     }
 });
 
-var map, mapPanel, tree, store, vectorLayer, overlay, panel_west, markers, ge, hili;
+var map, mapPanel, tree, store;
+var vectorLayer;
+var pointLayer1, pointSelectControl1, selectedFeature1, popup1, info1;
+var pointLayer2, pointSelectControl2, selectedFeature2, popup2, info2;
+var overlay, panel_west, markers, ge, hili;
 var gcs = new OpenLayers.Projection("EPSG:4326");
 var merc = new OpenLayers.Projection("EPSG:900913");
 var utm = new OpenLayers.Projection("EPSG:32647");
 var indian = new OpenLayers.Projection("EPSG:24047");
+
+google.load("earth", "1");
 
 var styles = new OpenLayers.StyleMap({
   "default": new OpenLayers.Style(null, {
@@ -100,12 +106,11 @@ var styles = new OpenLayers.StyleMap({
   })
 });
 
-google.load("earth", "1");
-
-vectorLayer = new OpenLayers.Layer.Vector("vector", {
-  displayInLayerSwitcher: true,
-  hideIntree: true,
-  styleMap: styles
+vectorLayer = new OpenLayers.Layer.Vector("vectorLayer", {
+  displayInLayerSwitcher: true
+  ,hideIntree: true
+  ,styleMap: styles
+  ,rendererOptions: {zIndexing: true}
 });
 
 // Add Popup: create popup on "featureselected" 05/08/2012
@@ -258,6 +263,36 @@ function addMarker(ll, popupClass, popupContentHTML, closeBox, overflow) {
   markers.addMarker(marker);
 }        
 
+// Add popup when hover feature 08/06/2012
+function onFeatureSelect(feature) {
+  selectedFeature = feature;
+  popup = new OpenLayers.Popup.FramedCloud(
+    ""
+    ,feature.geometry.getBounds().getCenterLonLat()
+    ,new OpenLayers.Size(100,100)
+    ,"<div style='padding:15px 5px 5px 10px;'>" +
+    "<table style='font-size:13px;color:red'>" + "<tr>" +
+    "<td width='40%'>Name</td>"+ "<td width='5%'>:</td>"+
+    "<td>"+feature.attributes.label+"</td>"+ "</tr>"+
+    "</table></div>"
+    ,null
+    ,true
+    ,onPopupClose
+  );
+  feature.popup = popup;
+  map.addPopup(popup);
+}
+
+function onPopupClose(evt) {
+  selectControl.unselect(selectedFeature);
+}
+
+function onFeatureUnselect(feature) {
+  map.removePopup(feature.popup);
+  feature.popup.destroy();
+  feature.popup = null;
+}
+
 var test_gps = function() {
   Ext.getCmp('londd').setValue(100);
   Ext.getCmp('lonmm').setValue(33);
@@ -280,7 +315,7 @@ var check_gps = function(){
 
 var report = function(lodd,lomm,loss,ladd,lamm,lass) {  
   Ext.Ajax.request({
-    url: 'rb/checkLonLat2.rb'
+    url: '/dsix/rb/checkLonLat2.rb'
     ,params: {
       method: 'GET'
       ,lodd: lodd
@@ -435,7 +470,7 @@ var check_gps_utm = function(){
 
 var report_utm = function(utmn, utme, zone) {
   Ext.Ajax.request({
-    url: 'rb/checkUTM.rb'
+    url: '/dsix/rb/checkUTM.rb'
     ,params: {
       method: 'GET'
       ,utmn: utmn
@@ -598,7 +633,7 @@ var check_gps_utm = function(){
 var report_utm = function(utmn, utme, zone) {
   
   Ext.Ajax.request({
-    url: 'rb/checkUTM.rb'
+    url: '/dsix/rb/checkUTM.rb'
     ,params: {
       method: 'GET'
       ,utmn: utmn
@@ -649,7 +684,7 @@ var check_gps_utm_indian = function(){
 var report_utm_indian = function(utmni, utmei, zonei) {
   
   Ext.Ajax.request({
-    url: 'rb/checkUTMIndian.rb'
+    url: '/dsix/rb/checkUTMIndian.rb'
     ,params: {
       method: 'GET'
       ,utmn: utmni
@@ -809,7 +844,7 @@ var search_query = function(){
 var search = function(query) {
   //debugger;
   Ext.Ajax.request({
-    url: 'rb/search-googlex.rb'
+    url: '/dsix/rb/search-googlex.rb'
     ,params: {
       method: 'GET'
       ,query: query
@@ -909,7 +944,7 @@ var myTextField = Ext.create("GeoExt.ux.QryComboBox",{
   ,fieldStore: ['loc_table','loc_gid','loc_text']
   ,hiddenField: ['loc_table','loc_gid']
   ,displayField: 'loc_text'
-  ,urlStore: 'rb/search-googlex.rb'
+  ,urlStore: '/dsix/rb/search-googlex.rb'
   ,width: '110'
   ,minListWidth: '300'
   ,anchor: '95%'
@@ -983,7 +1018,7 @@ var check_forest_info = function(layer,ll) {
       layer = 'mangrove_2552';
 
   Ext.Ajax.request({
-    url: 'rb/check_forest_info.rb'
+    url: '/dsix/rb/check_forest_info.rb'
     ,params: {
       method: 'GET'
       ,layer: layer
@@ -1023,6 +1058,7 @@ var selectCtrl = new OpenLayers.Control.SelectFeature(vectorLayer);
 var frm_input = Ext.create('Ext.form.Panel', {
   title: 'Inner Tabs',
   id: 'id_frm_input',
+  url: 'rb/process_input.rb',
   bodyStyle:'padding:5px',
   width: 600,
   fieldDefaults: {
@@ -1077,29 +1113,30 @@ var frm_input = Ext.create('Ext.form.Panel', {
       defaultType: 'textfield',
       items: [{
         fieldLabel: 'Title',
-        name: 'f1',
+        name: 'name',
         allowBlank:false
       },{
-        xtype : 'combo',
-        fieldLabel : 'Layer',
-        store : new Ext.data.SimpleStore({
-          data : [[1, 'input_layer1'], [2, 'input_layer2']],
-          id : 0,
-          fields : ['value', 'text']
-        }),
-        valueField : 'value',
-        displayField : 'text',
-        triggerAction : 'all',
-        editable : false,
-        name : 'f2'
+        xtype : 'combo'
+        ,fieldLabel : 'Layer'
+        ,id: 'id_layer'
+        ,store : new Ext.data.SimpleStore({
+          data : [[1, 'Layer 1'], [2, 'Layer 2']]
+          ,id : 0
+          ,fields : ['value', 'text']
+        })
+        ,valueField : 'value'
+        ,displayField : 'text'
+        ,triggerAction : 'all'
+        ,editable : false
+        ,name : 'layer'
       },{
-        xtype: 'datefield',
-        fieldLabel: 'Date',
-        name: 'f3'
+        fieldLabel: 'Description',
+        name: 'description',
+        allowBlank:false
       },{
         xtype: 'textareafield',
         fieldLabel: 'Location',
-        name: 'f4',
+        name: 'location',
         id: 'id_location',
         width: '100%',
         anchor: '100%'
@@ -1135,6 +1172,38 @@ var frm_input = Ext.create('Ext.form.Panel', {
   }],
   buttons: [{
     text: 'Save'
+    ,handler: function() {
+      frm_input.getForm().submit({
+        success: function(f,a) {
+          Ext.Msg.show({
+            title: 'Info'
+            ,msg: '1 feature added!'
+            ,buttons: Ext.Msg.OK
+            ,icon: Ext.Msg.INFO
+            ,fn: function(btn) {
+              // Reset input form
+              // Hide popup
+              // Remove all features
+              // Check if layer_1 is active --> layer_1.refresh()
+              // Check if layer_2 is active --> layer_2.refresh()  
+              vectorLayer.removeAllFeatures();
+              if (Ext.getCmp('id_layer').value == 1) { // Add Layer 1 point
+                pointLayer1.setVisibility(true);
+                pointLayer1.refresh();
+              } else if (Ext.getCmp('id_layer').value == 2) { // Layer 2 is active
+                pointLayer2.setVisibility(true);
+                pointLayer2.refresh();
+              }
+              frm_input.getForm().reset();
+              popup.hide();
+            }
+          });        
+        }
+        ,failure: function(f,a) {
+          Ext.Msg.alert('Error', 'Failed!!');
+        }
+      })
+    }
   },{
     text: 'Cancel'
     ,handler: function() {
@@ -1158,7 +1227,7 @@ function createPopup(feature) {
   
   if (!popup) {
     popup = Ext.create('GeoExt.window.Popup', {
-      title: 'My Popup',
+      title: 'DSI Popup',
       id: 'id_popup',
       location: feature,
       width:604,

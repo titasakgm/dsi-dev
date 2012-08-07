@@ -25,7 +25,11 @@ Ext.require([
   'Ext.tab.Panel',
   'Ext.form.field.ComboBox',
   'Ext.form.field.Date',
-  'Ext.form.field.HtmlEditor'
+  'Ext.form.field.HtmlEditor',
+  
+  // Add kml store
+  'GeoExt.data.FeatureStore',
+  'GeoExt.data.proxy.Protocol'
 
 ]);
 
@@ -78,7 +82,7 @@ Ext.application({
         o.collapse();
       }
     });
-    
+
     var toolbarItems = [],action;
     
     action = Ext.create('GeoExt.Action',{
@@ -124,7 +128,6 @@ Ext.application({
     toolbarItems.push(Ext.create('Ext.button.Button', action));
     toolbarItems.push("-");
     
-      
     action = Ext.create('GeoExt.Action',{
       control: new OpenLayers.Control.DrawFeature(vectorLayer, OpenLayers.Handler.Point),
       tooltip: 'วางจุดบนแผนที่',
@@ -224,14 +227,19 @@ Ext.application({
 
     // Add Input Form 05/08/2012
     action = Ext.create('GeoExt.Action', {
-      iconCls: "info",
-      id: 'id_select_feat',
-      control: selectCtrl,
-      tooltip: 'แบบฟอร์มนำเข้าข้อมูลจากผู้ใช้งาน',      
-      map: map,
-      enableToggle: true,
-      toggleGroup: "map",
-      allowDepress: true
+      iconCls: "info"
+      ,id: 'id_select_feat'
+      ,control: selectCtrl
+      ,tooltip: 'แบบฟอร์มนำเข้าข้อมูลจากผู้ใช้งาน'   
+      ,map: map
+      ,enableToggle: true
+      ,toggleGroup: "map"
+      ,allowDepress: true
+      ,handler: function() {
+        // Must hide pointLayer1 and pointLayer2 to enable selectCtrl on vectorLayer !!
+        pointLayer1.setVisibility(false);
+        pointLayer2.setVisibility(false);
+      }
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
 
@@ -420,7 +428,135 @@ Ext.application({
       }
     });
     toolbarItems.push(btn_print);
-  
+    
+    // create popup1 on "featureselected"
+    function createPopup1(feature) {
+
+      info1 = "<h2>name: " + feature.attributes.name + "</h2>";
+      info1 += "description: " + feature.attributes.description;
+      if (info1.search("<script") != -1) {
+        info1 = info1.replace(/</g, "&lt;");
+      }      
+      popup1 = Ext.create('GeoExt.window.Popup', {
+          title: 'Popup for Layer 1',
+          location: feature,
+          width:200,
+          html: info1,
+          maximizable: true,
+          collapsible: true,
+          anchorPosition: 'auto'
+      });
+      // unselect feature when the popup
+      // is closed
+      popup1.on({
+          close: function() {
+              if(OpenLayers.Util.indexOf(pointLayer1.selectedFeatures,
+                                         this.feature) > -1) {
+                  selectCtrl1.unselect(this.feature);
+              }
+          }
+      });
+      popup1.show();
+    }
+
+    function createPopup2(feature) {
+
+      info2 = "<h2>name: " + feature.attributes.name + "</h2>";
+      info2 += "description: " + feature.attributes.description;
+      if (info2.search("<script") != -1) {
+        info2 = info2.replace(/</g, "&lt;");
+      }      
+      popup2 = Ext.create('GeoExt.window.Popup', {
+          title: 'Popup for Layer 2',
+          location: feature,
+          width:200,
+          html: info2,
+          maximizable: true,
+          collapsible: true,
+          anchorPosition: 'auto'
+      });
+      // unselect feature when the popup is closed
+      popup2.on({
+          close: function() {
+              if(OpenLayers.Util.indexOf(pointLayer2.selectedFeatures,
+                                         this.feature) > -1) {
+                  selectCtrl2.unselect(this.feature);
+              }
+          }
+      });
+      popup2.show();
+    }
+
+    // Add KML Button to load kml/lines.kml to vectorLayer
+    var btn_kml1 = new Ext.Button({
+      iconCls: 'add_kml',
+      tooltip: 'Load KML Layer 1 มาวางซ้อนบน vectorLayer',
+      handler: function(){
+        if (!pointLayer1) {
+          pointLayer1 = new OpenLayers.Layer.Vector("Layer 1", {
+            projection: gcs
+            ,strategies: [new OpenLayers.Strategy.Fixed()]
+            ,protocol: new OpenLayers.Protocol.HTTP({
+              url: "kml/layer_1.kml"
+              ,format: new OpenLayers.Format.KML({
+                extractStyles: true
+                ,extractAttributes: true
+                ,maxDepth: 1
+              })
+            })
+          });
+          pointLayer1.events.on({
+            featureselected: function(e) {
+              createPopup1(e.feature);
+              }
+          });
+          selectCtrl1 = new OpenLayers.Control.SelectFeature(pointLayer1);
+          map.addLayer(pointLayer1);
+          map.addControl(selectCtrl1); 
+          selectCtrl1.activate();
+        } else {
+          pointLayer1.refresh();
+          pointLayer1.setVisibility(true);
+        }
+      }
+    });
+    toolbarItems.push(btn_kml1);
+
+    // Add KML Button to load kml/lines.kml to vectorLayer
+    var btn_kml2 = new Ext.Button({
+      iconCls: 'add_kml',
+      tooltip: 'Load KML Layer 2 มาวางซ้อนบน vectorLayer',
+      handler: function(){
+        if (!pointLayer2) {
+          pointLayer2 = new OpenLayers.Layer.Vector("Layer 2", {
+            projection: gcs,
+            strategies: [new OpenLayers.Strategy.Fixed()],
+            protocol: new OpenLayers.Protocol.HTTP({
+              url: "kml/layer_2.kml",
+              format: new OpenLayers.Format.KML({
+                extractStyles: true, 
+                extractAttributes: true,
+                maxDepth: 1
+              })
+            })
+          });
+          pointLayer2.events.on({
+            featureselected: function(e) {
+              createPopup2(e.feature);
+              }
+          });
+          selectCtrl2 = new OpenLayers.Control.SelectFeature(pointLayer2);
+          map.addLayer(pointLayer2);
+          map.addControl(selectCtrl2); 
+          selectCtrl2.activate();
+        } else {
+          pointLayer2.refresh();
+          pointLayer2.setVisibility(true);
+        }
+      }
+    });
+    toolbarItems.push(btn_kml2);
+    
     var utmgrid = new OpenLayers.Layer.WMS(
       "UTM Grid",
       "http://203.151.201.129/cgi-bin/mapserv",
@@ -434,7 +570,7 @@ Ext.application({
     utmgrid.displayInLayerSwitcher = false;
     utmgrid.hideInTree = true;
     utmgrid.setVisibility(false);
-    
+
     mapPanel = Ext.create('GeoExt.panel.Map', {
       border: true,
       region: "center",
@@ -443,6 +579,9 @@ Ext.application({
       center: dsi,
       zoom: 6,
       layers: [
+        
+        //pointLayer,
+
         new OpenLayers.Layer.WMS(
           "ป่าชายเลน ปี 2552",
           "http://203.151.201.129/cgi-bin/mapserv",
@@ -678,7 +817,8 @@ Ext.application({
       items: {
         layout: 'border',
         deferredRender: false,
-        items: [mapPanel, panel_west, earth]
+        //items: [mapPanel, panel_west, earth]
+        items: [mapPanel, panel_west]
       }
     });
   }

@@ -2,7 +2,8 @@
 # encoding: utf-8
 
 require 'cgi'
-require 'postgres'
+require 'rubygems'
+require 'pg'
 require 'net/http'
 
 c = CGI::new

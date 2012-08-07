@@ -1,7 +1,8 @@
 #!/usr/bin/ruby
 # encoding: utf-8
 
-require 'postgres'
+require 'rubygems'
+require 'pg'
 
 def update(gid, center)
   con = PGconn.connect("localhost",5432,nil,nil,"dsi","postgres")
