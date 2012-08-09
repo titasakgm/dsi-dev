@@ -135,6 +135,17 @@ hili = new OpenLayers.Layer.WMS("Hili",
   {isBaseLayer: false, displayInLayerSwitcher: true, singleTile: true, ratio: 1,hideIntree: true }
 );
 hili.setOpacity(0);
+
+var info = function(title, msg) {
+  Ext.Msg.show({
+    title: title,
+    msg: msg,
+    minWidth: 200,
+    modal: true,
+    icon: Ext.Msg.INFO,
+    buttons: Ext.Msg.OK
+  });
+};
     
 //////////////////////////////////////////////
 // GPS
@@ -1056,66 +1067,76 @@ var selectCtrl = new OpenLayers.Control.SelectFeature(vectorLayer);
 
 // Add Popup: define "createPopup" function + Input Form 05/08/2012
 var frm_input = Ext.create('Ext.form.Panel', {
-  title: 'Inner Tabs',
-  id: 'id_frm_input',
-  url: 'rb/process_input.rb',
-  bodyStyle:'padding:5px',
-  width: 600,
-  fieldDefaults: {
-    labelAlign: 'top',
-    msgTarget: 'side'
-  },
-  defaults: {
+  title: 'Inner Tabs'
+  ,id: 'id_frm_input'
+  ,url: 'rb/process_input.rb'
+  ,bodyStyle:'padding:5px'
+  ,width: 600
+  ,fieldDefaults: {
+    labelAlign: 'top'
+    ,msgTarget: 'side'
+  }
+  ,defaults: {
     anchor: '100%'
-  },
-  items: [{
-    layout:'column',
-    border:false,
-    items:[{
-      columnWidth:.5,
-      border:false,
-      layout: 'anchor',
-      defaultType: 'textfield',
-      items: [{
-        fieldLabel: 'First Name',
-        name: 'first',
-        anchor:'95%'
-      }, {
-        fieldLabel: 'Company',
-        name: 'company',
-        anchor:'95%'
+  }
+  ,items: [{
+    layout:'column'
+    ,border:false
+    ,items:[{
+      columnWidth:.5
+      ,border:false
+      ,layout: 'anchor'
+      ,defaultType: 'textfield'
+      ,items: [{
+        fieldLabel: 'First Name'
+        ,name: 'first'
+        ,anchor:'95%'
+      },{
+        fieldLabel: 'Company'
+        ,name: 'company'
+        ,anchor:'95%'
       }]
     },{
-      columnWidth:.5,
-      border:false,
-      layout: 'anchor',
-      defaultType: 'textfield',
-      items: [{
-        fieldLabel: 'Last Name',
-        name: 'last',
-        anchor:'95%'
+      columnWidth:.5
+      ,border:false
+      ,layout: 'anchor'
+      ,defaultType: 'textfield'
+      ,items: [{
+        fieldLabel: 'Last Name'
+        ,name: 'last'
+        ,anchor:'95%'
       },{
-        fieldLabel: 'Email',
-        name: 'email',
-        vtype:'email',
-        anchor:'95%'
+        fieldLabel: 'Email'
+        ,name: 'email'
+        ,vtype:'email'
+        ,anchor:'95%'
       }]
     }]
   },{
-    xtype:'tabpanel',
-    plain:true,
-    activeTab: 0,
-    height:235,
-    defaults:{bodyStyle:'padding:10px'},
-    items:[{
-      title:'Demo Input',
-      defaults: {width: 230},
-      defaultType: 'textfield',
-      items: [{
-        fieldLabel: 'Title',
-        name: 'name',
-        allowBlank:false
-      },{
+    xtype:'tabpanel'
+    ,plain:true
+    ,activeTab: 0
+    ,height:235
+    ,defaults:{bodyStyle:'padding:10px'}
+    ,items:[{
+      title:'Demo Input'
+      ,defaults: {width: 200}
+      ,items: [{
+        xtype: 'textfield'
+        ,fieldLabel: 'Title'
+        ,name: 'name'
+        ,allowBlank:false
+
+        //CHECK!!!
+        ,enableKeyEvents: true
+        ,listeners: {
+          keyup: function(){
+            Ext.getCmp('id_upload_title').setValue(this.value);
+          }
+        }
+
+
+    },{
         xtype : 'combo'
         ,fieldLabel : 'Layer'
         ,id: 'id_layer'
@@ -1130,43 +1151,93 @@ var frm_input = Ext.create('Ext.form.Panel', {
         ,editable : false
         ,name : 'layer'
       },{
-        fieldLabel: 'Description',
-        name: 'description',
-        allowBlank:false
+        xtype: 'textfield'
+        ,fieldLabel: 'Description'
+        ,name: 'description'
+        ,allowBlank:false
       },{
-        xtype: 'textareafield',
-        fieldLabel: 'Location',
-        name: 'location',
-        id: 'id_location',
-        width: '100%',
-        anchor: '100%'
+        xtype: 'textareafield'
+        ,fieldLabel: 'Location'
+        ,name: 'location'
+        ,id: 'id_location'
+        ,width: '100%'
+        ,anchor: '100%'
       }]
     },{
-      title:'Phone Numbers',
-      defaults: {width: 230},
-      defaultType: 'textfield',
+      
+      xtype: 'form'
+      ,title:'Upload Photo'
+      ,width: 500
+      ,frame: true
+      ,title: 'File Upload Form'
+      ,bodyPadding: '10 10 0'
 
-      items: [{
-        fieldLabel: 'Home',
-        name: 'home'
+      ,defaults: {
+        anchor: '100%'
+        ,xtype: 'textfield'
+        ,msgTarget: 'side'
+        ,labelWidth: 50
+      }
+
+      ,items: [{
+        fieldLabel: 'Title'
+        ,id: 'id_upload_title'
+        ,name: 'upload_title'
+        ,disabled: true
       },{
-        fieldLabel: 'Business',
-        name: 'business'
+        xtype: 'filefield'
+        ,name: 'file'
+        ,id: 'id_file'
+        ,fieldLabel: 'Photo'
+        ,labelWidth: 50
+        ,msgTarget: 'side'
+        ,allowBlank: true
+        ,buttonText: ''
+        ,buttonConfig: {
+          iconCls: 'upload'
+        }
       },{
-        fieldLabel: 'Mobile',
-        name: 'mobile'
+        fieldLabel: 'File saved'
+        ,name: 'origname'
+        ,id: 'id_origname'
       },{
-        fieldLabel: 'Fax',
-        name: 'fax'
+        xtype: 'hidden'
+        ,name: 'imgname'
+        ,id: 'id_imgname'
+      }]
+      ,buttons: [{
+        text: 'Upload'
+        ,handler: function() {
+          var form = this.up('form').getForm();
+          if (form.isValid()) {
+            form.submit({
+              url: 'rb/file-upload.rb'
+              ,waitMsg: 'Uploading photo...'
+              ,success: function(fp, o) {
+                var j = Ext.JSON.decode(o.response.responseText);
+                var imgname = j.imgname;
+                var origname = j.origname;
+                Ext.getCmp('id_imgname').setValue(imgname);
+                Ext.getCmp('id_origname').setValue(origname);
+                info('Success', 'File ' + origname + ' has been uploaded!');
+              }
+            })
+          }
+        }
+      },{
+        text: 'Reset',
+        handler: function() {
+          this.up('form').getForm().reset();
+        }
       }]
     },{
-      cls: 'x-plain',
-      title: 'WYSIWYG',
-      layout: 'fit',
-      items: {
-        xtype: 'htmleditor',
-        name: 'wysisyg',
-        fieldLabel: 'WYSIWYG'
+      cls: 'x-plain'
+      ,title: 'WYSIWYG'
+      ,layout: 'fit'
+      ,items: {
+        xtype: 'htmleditor'
+        ,name: 'wysisyg'
+        ,fieldLabel: 'WYSIWYG'
       }
     }]
   }],
@@ -1188,11 +1259,15 @@ var frm_input = Ext.create('Ext.form.Panel', {
               // Check if layer_2 is active --> layer_2.refresh()  
               vectorLayer.removeAllFeatures();
               if (Ext.getCmp('id_layer').value == 1) { // Add Layer 1 point
-                pointLayer1.setVisibility(true);
-                pointLayer1.refresh();
+                if (pointLayer1) {
+                  pointLayer1.setVisibility(true);
+                  pointLayer1.refresh();
+                }
               } else if (Ext.getCmp('id_layer').value == 2) { // Layer 2 is active
-                pointLayer2.setVisibility(true);
-                pointLayer2.refresh();
+                if (pointLayer2) {
+                  pointLayer2.setVisibility(true);
+                  pointLayer2.refresh();
+                }
               }
               frm_input.getForm().reset();
               popup.hide();

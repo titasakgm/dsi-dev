@@ -16,67 +16,12 @@
       <visibility>0</visibility>
       <description>Data</description>
         <Placemark>
-          <name>DSI</name>
+          <name>Test 3</name>
           <styleUrl>#marker</styleUrl>
-          <description>ทดสอบ</description>
+          <description>Test 3</description>
+          <imgUrl>http://203.151.201.129/dsix/photos/49607562.jpg</imgUrl>
           <Point>
-            <coordinates>99.8516785718708,16.6249789085202</coordinates>
-          </Point>
-        </Placemark>
-        <Placemark>
-          <name>zzz</name>
-          <styleUrl>#marker</styleUrl>
-          <description>zzzzzz</description>
-          <Point>
-            <coordinates>99.6758973218733,9.11223744368927</coordinates>
-          </Point>
-        </Placemark>
-        <Placemark>
-          <name>mmmmmm</name>
-          <styleUrl>#marker</styleUrl>
-          <description>ccccccccc</description>
-          <Point>
-            <coordinates>98.5113465406288,15.0183832949788</coordinates>
-          </Point>
-        </Placemark>
-        <Placemark>
-          <name>qqq</name>
-          <styleUrl>#marker</styleUrl>
-          <description>www</description>
-          <Point>
-            <coordinates>99.3243348218784,15.8866872072347</coordinates>
-          </Point>
-        </Placemark>
-        <Placemark>
-          <name>aaa</name>
-          <styleUrl>#marker</styleUrl>
-          <description>sss</description>
-          <Point>
-            <coordinates>105.125116071876,14.5935225104185</coordinates>
-          </Point>
-        </Placemark>
-        <Placemark>
-          <name>qqq</name>
-          <styleUrl>#marker</styleUrl>
-          <description>qqq</description>
-          <Point>
-            <coordinates>99.3023621656264,12.928916580171</coordinates>
-          </Point>
-        </Placemark>
-        <Placemark>
-          <name>rrr</name>
-          <styleUrl>#marker</styleUrl>
-          <description>rrr</description>
-          <Point>
-            <coordinates>102.136834821874,18.051186166556</coordinates>
-          </Point>
-        </Placemark>
-        <Placemark>
-          <name>ddddd</name>
-          <styleUrl>#marker</styleUrl>
-          <description>dddddd</description>
-          <Point>
-            <coordinates>104.641717634378,17.3814114933099</coordinates>
+            <coordinates>100.708612165624,14.9440929406135</coordinates>
           </Point>
         </Placemark>
     </Folder>

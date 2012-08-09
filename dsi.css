@@ -178,3 +178,15 @@ div.olLayerGoogleCopyright {
 .close {
   background-image: url("img/icon_close.png") !important;
 }
+
+.upload {
+  background-image: url("img/icon_upload.png") !important;
+}
+
+.layer1 {
+  background-image: url("img/icon_layer1.png") !important;
+}
+
+.layer2 {
+  background-image: url("img/icon_layer2.png") !important;
+}

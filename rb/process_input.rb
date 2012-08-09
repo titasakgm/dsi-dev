@@ -14,21 +14,21 @@ id       | integer           | not null default nextval('kml_id_seq'::regclass)
 kmlname  | character varying |
 name     | character varying |
 descr    | character varying |
-the_geom | geometry   
-
+the_geom | geometry          |   
+imgname  | character varying |
 =end
 
-def insert_kml(kmlname,name,descr,loc)
+def insert_kml(kmlname,name,descr,imgname,loc)
   con = PGconn.connect("localhost",5432,nil,nil,"dsi","admin")
-  sql = "INSERT INTO kml (kmlname,name,descr,the_geom) "
-  sql += "VALUES('#{kmlname}','#{name}','#{descr}',geometryfromtext(\'#{loc}\',4326))"
+  sql = "INSERT INTO kml (kmlname,name,descr,imgname,the_geom) "
+  sql += "VALUES('#{kmlname}','#{name}','#{descr}','#{imgname}',geometryfromtext(\'#{loc}\',4326))"
   res = con.exec(sql)
   con.close
 end
 
 def generate_kml(layername)
   con = PGconn.connect("localhost",5432,nil,nil,"dsi","admin")
-  sql = "select id,kmlname,name,descr,astext(the_geom) as geom "
+  sql = "select id,kmlname,name,descr,imgname,astext(the_geom) as geom "
   sql += "FROM kml "
   sql += "WHERE kmlname = '#{layername}' "
   res = con.exec(sql)
@@ -46,6 +46,7 @@ def generate_kml(layername)
     kmlname = rec['kmlname']
     name = rec['name']
     descr = rec['descr']
+    imgname = rec['imgname']
     geom = rec['geom']
     coord = 'NA'
     if geom =~ /POINT/
@@ -62,6 +63,10 @@ def generate_kml(layername)
     place += "          <styleUrl>#marker</styleUrl>\n"
     place += "          <description>#{descr}</description>\n"
 
+    if (imgname.to_s.length > 0)
+      place += "          <imgUrl>http://203.151.201.129/dsix/photos/#{imgname}</imgUrl>\n"
+    end
+    
     if (geom =~ /POINT/)
       place += "          <Point>\n"
       place += "            <coordinates>#{coord}</coordinates>\n"
@@ -80,9 +85,10 @@ name = c['name']
 layer = c['layer']
 kmlname = "layer_#{layer}"
 descr = c['description']
+imgname = c['imgname']
 loc = c['location']
 
-insert_kml(kmlname,name,descr,loc)
+insert_kml(kmlname,name,descr,imgname,loc)
 
 data = {}
 data['success'] = true

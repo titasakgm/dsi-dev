@@ -237,8 +237,10 @@ Ext.application({
       ,allowDepress: true
       ,handler: function() {
         // Must hide pointLayer1 and pointLayer2 to enable selectCtrl on vectorLayer !!
-        pointLayer1.setVisibility(false);
-        pointLayer2.setVisibility(false);
+        if (pointLayer1)
+          pointLayer1.setVisibility(false);
+        if (pointLayer2)
+          pointLayer2.setVisibility(false);
       }
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
@@ -434,6 +436,11 @@ Ext.application({
 
       info1 = "<h2>name: " + feature.attributes.name + "</h2>";
       info1 += "description: " + feature.attributes.description;
+      
+      if (feature.attributes.imgUrl) {
+        info1 += "<p><img src='" + feature.attributes.imgUrl + "' width='100' height='100' border='1' />";
+      }
+      
       if (info1.search("<script") != -1) {
         info1 = info1.replace(/</g, "&lt;");
       }      
@@ -463,6 +470,11 @@ Ext.application({
 
       info2 = "<h2>name: " + feature.attributes.name + "</h2>";
       info2 += "description: " + feature.attributes.description;
+      
+      if (feature.attributes.imgUrl) {
+        info2 += "<p><img src='" + feature.attributes.imgUrl + "' width='100' height='100' border='1' />";
+      }
+      
       if (info2.search("<script") != -1) {
         info2 = info2.replace(/</g, "&lt;");
       }      
@@ -489,12 +501,13 @@ Ext.application({
 
     // Add KML Button to load kml/lines.kml to vectorLayer
     var btn_kml1 = new Ext.Button({
-      iconCls: 'add_kml',
+      iconCls: 'layer1',
       tooltip: 'Load KML Layer 1 มาวางซ้อนบน vectorLayer',
       handler: function(){
         if (!pointLayer1) {
           pointLayer1 = new OpenLayers.Layer.Vector("Layer 1", {
             projection: gcs
+            ,iconCls: 'layer1'
             ,strategies: [new OpenLayers.Strategy.Fixed()]
             ,protocol: new OpenLayers.Protocol.HTTP({
               url: "kml/layer_1.kml"
@@ -515,8 +528,12 @@ Ext.application({
           map.addControl(selectCtrl1); 
           selectCtrl1.activate();
         } else {
-          pointLayer1.refresh();
-          pointLayer1.setVisibility(true);
+          if (pointLayer1.visibility == true) {
+            pointLayer1.setVisibility(false);
+          } else {
+            pointLayer1.refresh();
+            pointLayer1.setVisibility(true);
+          }
         }
       }
     });
@@ -524,19 +541,20 @@ Ext.application({
 
     // Add KML Button to load kml/lines.kml to vectorLayer
     var btn_kml2 = new Ext.Button({
-      iconCls: 'add_kml',
-      tooltip: 'Load KML Layer 2 มาวางซ้อนบน vectorLayer',
-      handler: function(){
+      iconCls: 'layer2'
+      ,tooltip: 'Load KML Layer 2 มาวางซ้อนบน vectorLayer'
+      ,handler: function(){
         if (!pointLayer2) {
           pointLayer2 = new OpenLayers.Layer.Vector("Layer 2", {
-            projection: gcs,
-            strategies: [new OpenLayers.Strategy.Fixed()],
-            protocol: new OpenLayers.Protocol.HTTP({
-              url: "kml/layer_2.kml",
-              format: new OpenLayers.Format.KML({
-                extractStyles: true, 
-                extractAttributes: true,
-                maxDepth: 1
+            projection: gcs
+            ,iconCls: 'layer2'
+            ,strategies: [new OpenLayers.Strategy.Fixed()]
+            ,protocol: new OpenLayers.Protocol.HTTP({
+              url: "kml/layer_2.kml"
+              ,format: new OpenLayers.Format.KML({
+                extractStyles: true
+                ,extractAttributes: true
+                ,maxDepth: 1
               })
             })
           });
@@ -550,8 +568,12 @@ Ext.application({
           map.addControl(selectCtrl2); 
           selectCtrl2.activate();
         } else {
-          pointLayer2.refresh();
-          pointLayer2.setVisibility(true);
+          if (pointLayer2.visibility == true) {
+            pointLayer2.setVisibility(false);
+          } else {
+            pointLayer2.refresh();
+            pointLayer2.setVisibility(true);
+          }
         }
       }
     });

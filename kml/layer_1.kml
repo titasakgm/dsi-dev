@@ -16,43 +16,21 @@
       <visibility>0</visibility>
       <description>Data</description>
         <Placemark>
-          <name>Test</name>
+          <name>test 1</name>
           <styleUrl>#marker</styleUrl>
-          <description>aaa</description>
+          <description>test 1</description>
+          <imgUrl>http://203.151.201.129/dsix/photos/62090889.png</imgUrl>
           <Point>
-            <coordinates>99.6539246656214,18.2599732629553</coordinates>
+            <coordinates>100.422967634376,16.1823363175544</coordinates>
           </Point>
         </Placemark>
         <Placemark>
           <name>Test 2</name>
           <styleUrl>#marker</styleUrl>
-          <description>bbb</description>
+          <description>Test 2</description>
+          <imgUrl>http://203.151.201.129/dsix/photos/98236086.jpg</imgUrl>
           <Point>
-            <coordinates>100.774530134371,17.2765348907496</coordinates>
-          </Point>
-        </Placemark>
-        <Placemark>
-          <name>11111</name>
-          <styleUrl>#marker</styleUrl>
-          <description>22222</description>
-          <Point>
-            <coordinates>99.4781434156239,11.2208077930044</coordinates>
-          </Point>
-        </Placemark>
-        <Placemark>
-          <name>11111</name>
-          <styleUrl>#marker</styleUrl>
-          <description>11111</description>
-          <Point>
-            <coordinates>99.6319520093784,11.4793228174887</coordinates>
-          </Point>
-        </Placemark>
-        <Placemark>
-          <name>22222</name>
-          <styleUrl>#marker</styleUrl>
-          <description>22222</description>
-          <Point>
-            <coordinates>99.7198426343772,12.1460456894991</coordinates>
+            <coordinates>101.609491071872,15.8972536345137</coordinates>
           </Point>
         </Placemark>
     </Folder>
