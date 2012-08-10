@@ -187,6 +187,15 @@ div.olLayerGoogleCopyright {
   background-image: url("img/icon_layer1.png") !important;
 }
 
+.layer1_del {
+  background-image: url("img/icon_del_layer1.png") !important;
+}
+
 .layer2 {
   background-image: url("img/icon_layer2.png") !important;
 }
+
+.layer2_del {
+  background-image: url("img/icon_del_layer2.png") !important;
+}
+

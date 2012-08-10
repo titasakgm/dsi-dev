@@ -5,27 +5,6 @@ require 'rubygems'
 require 'json'
 require 'pg'
 
-
-=begin
-Database: dsi
-Table: kml
-
-id       | integer           | not null default nextval('kml_id_seq'::regclass)
-kmlname  | character varying |
-name     | character varying |
-descr    | character varying |
-the_geom | geometry          |   
-imgname  | character varying |
-=end
-
-def insert_kml(kmlname,name,descr,imgname,loc)
-  con = PGconn.connect("localhost",5432,nil,nil,"dsi","admin")
-  sql = "INSERT INTO kml (kmlname,name,descr,imgname,the_geom) "
-  sql += "VALUES('#{kmlname}','#{name}','#{descr}','#{imgname}',geometryfromtext(\'#{loc}\',4326))"
-  res = con.exec(sql)
-  con.close
-end
-
 def generate_kml(layername)
   con = PGconn.connect("localhost",5432,nil,nil,"dsi","admin")
   sql = "select id,kmlname,name,descr,imgname,astext(the_geom) as geom "
@@ -82,22 +61,14 @@ def generate_kml(layername)
 end
 
 c = CGI::new
-name = c['name']
+id = c['id']
 layer = c['layer']
-kmlname = "layer_#{layer}"
-descr = c['description']
-imgname = c['imgname']
-loc = c['location']
 
-insert_kml(kmlname,name,descr,imgname,loc)
+con = PGconn.connect("localhost",5432,nil,nil,"dsi","admin")
+sql = "DELETE FROM kml "
+sql += "WHERE id='#{id}' "
+res = con.exec(sql)
+con.close
 
-data = {}
-data['success'] = true
-
-print <<EOF
-Content-type: text/html
-
-#{data.to_json}
-EOF
-
-generate_kml(kmlname)
+# Rebuild KML for this layer (1/2)
+generate_kml(layer)

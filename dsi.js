@@ -359,7 +359,167 @@ Ext.application({
     toolbarItems.push(button);
     
     toolbarItems.push("-");
-    
+
+    // create popup1 on "featureselected"
+    function createPopup1(feature) {
+
+      info1 = "<h2>name: " + feature.attributes.name + "</h2>";
+      info1 += "description: " + feature.attributes.description;
+      
+      if (feature.attributes.imgUrl) {
+        info1 += "<p><img src='" + feature.attributes.imgUrl + "' width='100' height='100' border='1' />";
+      }
+      
+      if (info1.search("<script") != -1) {
+        info1 = info1.replace(/</g, "&lt;");
+      }
+      
+      popup1 = Ext.create('GeoExt.window.Popup', {
+          title: 'Popup for Layer 1',
+          location: feature,
+          width:200,
+          html: info1,
+          maximizable: true,
+          collapsible: true,
+          anchorPosition: 'auto'
+      });
+      // unselect feature when the popup
+      // is closed
+      popup1.on({
+          close: function() {
+              if(OpenLayers.Util.indexOf(pointLayer1.selectedFeatures,
+                                         this.feature) > -1) {
+                  selectCtrl1.unselect(this.feature);
+              }
+          }
+      });
+      popup1.show();
+    }
+
+    function createPopup2(feature) {
+
+      info2 = "<h2>name: " + feature.attributes.name + "</h2>";
+      info2 += "description: " + feature.attributes.description;
+      
+      if (feature.attributes.imgUrl) {
+        info2 += "<p><img src='" + feature.attributes.imgUrl + "' width='100' height='100' border='1' />";
+      }
+      
+      if (info2.search("<script") != -1) {
+        info2 = info2.replace(/</g, "&lt;");
+      }
+      
+      // Add Delete button to delete feature from database
+      info2 += "<input type='button' value='Delete' onclick='delete_feature(" + feature.attributes.id + ",2)' />";
+
+      popup2 = Ext.create('GeoExt.window.Popup', {
+          title: 'Popup for Layer 2',
+          location: feature,
+          width:200,
+          html: info2,
+          maximizable: true,
+          collapsible: true,
+          anchorPosition: 'auto'
+      });
+      // unselect feature when the popup is closed
+      popup2.on({
+          close: function() {
+              if(OpenLayers.Util.indexOf(pointLayer2.selectedFeatures,
+                                         this.feature) > -1) {
+                  selectCtrl2.unselect(this.feature);
+              }
+          }
+      });
+      popup2.show();
+    }
+
+    var tt1a = 'แสดงชั้นข้อมูล KML Layer 1';
+    var tt1x = 'ลบชั้นข้อมูล KML Layer 1';
+    // Add KML Button to load kml/lines.kml to vectorLayer
+    var btn_kml1 = new Ext.Button({
+      id: 'id_btn_kml1'
+      ,iconCls: 'layer1'
+      ,tooltip: tt1a
+      ,handler: function(){
+        if (this.iconCls == 'layer1') {
+          pointLayer1 = new OpenLayers.Layer.Vector("Layer 1", {
+            projection: gcs
+            ,iconCls: 'layer1'
+            ,strategies: [new OpenLayers.Strategy.Fixed()]
+            ,protocol: new OpenLayers.Protocol.HTTP({
+              url: "kml/layer_1.kml"
+              ,format: new OpenLayers.Format.KML({
+                extractStyles: true
+                ,extractAttributes: true
+                ,maxDepth: 1
+              })
+            })
+          });
+          pointLayer1.events.on({
+            featureselected: function(e) {
+              createPopup1(e.feature);
+              }
+          });
+          selectCtrl1 = new OpenLayers.Control.SelectFeature(pointLayer1);
+          map.addLayer(pointLayer1);
+          map.addControl(selectCtrl1); 
+          selectCtrl1.activate();
+          this.setIconCls('layer1_del');
+          this.setTooltip(tt1x);
+        } else {
+          map.removeControl(selectCtrl1);
+          map.removeLayer(pointLayer1);
+          this.setIconCls('layer1');
+          this.setTooltip(tt1a);
+        }
+      }
+    });
+    toolbarItems.push(btn_kml1);
+
+    // Add KML Button to load kml/lines.kml to vectorLayer
+    var tt2a = 'แสดงชั้นข้อมูล KML Layer 2';
+    var tt2x = 'ลบชั้นข้อมูล KML Layer 2';
+    var btn_kml2 = new Ext.Button({
+      iconCls: 'layer2'
+      ,tooltip: tt2a
+      ,handler: function(){
+        if (this.iconCls == 'layer2') {
+          pointLayer2 = new OpenLayers.Layer.Vector("Layer 2", {
+            projection: gcs
+            ,iconCls: 'layer2'
+            ,strategies: [new OpenLayers.Strategy.Fixed()]
+            ,protocol: new OpenLayers.Protocol.HTTP({
+              url: "kml/layer_2.kml"
+              ,format: new OpenLayers.Format.KML({
+                extractStyles: true
+                ,extractAttributes: true
+                ,maxDepth: 1
+              })
+            })
+          });
+          pointLayer2.events.on({
+            featureselected: function(e) {
+              createPopup2(e.feature);
+              }
+          });
+          selectCtrl2 = new OpenLayers.Control.SelectFeature(pointLayer2);
+          map.addLayer(pointLayer2);
+          map.addControl(selectCtrl2); 
+          selectCtrl2.activate();
+          this.setIconCls('layer2_del');
+          this.setTooltip(tt2x);
+        } else {
+          map.removeControl(selectCtrl2);
+          map.removeLayer(pointLayer2);
+          this.setIconCls('layer2');
+          this.setTooltip(tt2a);
+        }
+      }
+    });
+    toolbarItems.push(btn_kml2);
+
+    toolbarItems.push("-");
+        
     action = Ext.create('GeoExt.Action',{
        tooltip: "Previous view",
        control: ctrl.previous,
@@ -430,154 +590,6 @@ Ext.application({
       }
     });
     toolbarItems.push(btn_print);
-    
-    // create popup1 on "featureselected"
-    function createPopup1(feature) {
-
-      info1 = "<h2>name: " + feature.attributes.name + "</h2>";
-      info1 += "description: " + feature.attributes.description;
-      
-      if (feature.attributes.imgUrl) {
-        info1 += "<p><img src='" + feature.attributes.imgUrl + "' width='100' height='100' border='1' />";
-      }
-      
-      if (info1.search("<script") != -1) {
-        info1 = info1.replace(/</g, "&lt;");
-      }      
-      popup1 = Ext.create('GeoExt.window.Popup', {
-          title: 'Popup for Layer 1',
-          location: feature,
-          width:200,
-          html: info1,
-          maximizable: true,
-          collapsible: true,
-          anchorPosition: 'auto'
-      });
-      // unselect feature when the popup
-      // is closed
-      popup1.on({
-          close: function() {
-              if(OpenLayers.Util.indexOf(pointLayer1.selectedFeatures,
-                                         this.feature) > -1) {
-                  selectCtrl1.unselect(this.feature);
-              }
-          }
-      });
-      popup1.show();
-    }
-
-    function createPopup2(feature) {
-
-      info2 = "<h2>name: " + feature.attributes.name + "</h2>";
-      info2 += "description: " + feature.attributes.description;
-      
-      if (feature.attributes.imgUrl) {
-        info2 += "<p><img src='" + feature.attributes.imgUrl + "' width='100' height='100' border='1' />";
-      }
-      
-      if (info2.search("<script") != -1) {
-        info2 = info2.replace(/</g, "&lt;");
-      }      
-      popup2 = Ext.create('GeoExt.window.Popup', {
-          title: 'Popup for Layer 2',
-          location: feature,
-          width:200,
-          html: info2,
-          maximizable: true,
-          collapsible: true,
-          anchorPosition: 'auto'
-      });
-      // unselect feature when the popup is closed
-      popup2.on({
-          close: function() {
-              if(OpenLayers.Util.indexOf(pointLayer2.selectedFeatures,
-                                         this.feature) > -1) {
-                  selectCtrl2.unselect(this.feature);
-              }
-          }
-      });
-      popup2.show();
-    }
-
-    // Add KML Button to load kml/lines.kml to vectorLayer
-    var btn_kml1 = new Ext.Button({
-      iconCls: 'layer1',
-      tooltip: 'Load KML Layer 1 มาวางซ้อนบน vectorLayer',
-      handler: function(){
-        if (!pointLayer1) {
-          pointLayer1 = new OpenLayers.Layer.Vector("Layer 1", {
-            projection: gcs
-            ,iconCls: 'layer1'
-            ,strategies: [new OpenLayers.Strategy.Fixed()]
-            ,protocol: new OpenLayers.Protocol.HTTP({
-              url: "kml/layer_1.kml"
-              ,format: new OpenLayers.Format.KML({
-                extractStyles: true
-                ,extractAttributes: true
-                ,maxDepth: 1
-              })
-            })
-          });
-          pointLayer1.events.on({
-            featureselected: function(e) {
-              createPopup1(e.feature);
-              }
-          });
-          selectCtrl1 = new OpenLayers.Control.SelectFeature(pointLayer1);
-          map.addLayer(pointLayer1);
-          map.addControl(selectCtrl1); 
-          selectCtrl1.activate();
-        } else {
-          if (pointLayer1.visibility == true) {
-            pointLayer1.setVisibility(false);
-          } else {
-            pointLayer1.refresh();
-            pointLayer1.setVisibility(true);
-          }
-        }
-      }
-    });
-    toolbarItems.push(btn_kml1);
-
-    // Add KML Button to load kml/lines.kml to vectorLayer
-    var btn_kml2 = new Ext.Button({
-      iconCls: 'layer2'
-      ,tooltip: 'Load KML Layer 2 มาวางซ้อนบน vectorLayer'
-      ,handler: function(){
-        if (!pointLayer2) {
-          pointLayer2 = new OpenLayers.Layer.Vector("Layer 2", {
-            projection: gcs
-            ,iconCls: 'layer2'
-            ,strategies: [new OpenLayers.Strategy.Fixed()]
-            ,protocol: new OpenLayers.Protocol.HTTP({
-              url: "kml/layer_2.kml"
-              ,format: new OpenLayers.Format.KML({
-                extractStyles: true
-                ,extractAttributes: true
-                ,maxDepth: 1
-              })
-            })
-          });
-          pointLayer2.events.on({
-            featureselected: function(e) {
-              createPopup2(e.feature);
-              }
-          });
-          selectCtrl2 = new OpenLayers.Control.SelectFeature(pointLayer2);
-          map.addLayer(pointLayer2);
-          map.addControl(selectCtrl2); 
-          selectCtrl2.activate();
-        } else {
-          if (pointLayer2.visibility == true) {
-            pointLayer2.setVisibility(false);
-          } else {
-            pointLayer2.refresh();
-            pointLayer2.setVisibility(true);
-          }
-        }
-      }
-    });
-    toolbarItems.push(btn_kml2);
     
     var utmgrid = new OpenLayers.Layer.WMS(
       "UTM Grid",
@@ -840,7 +852,7 @@ Ext.application({
         layout: 'border',
         deferredRender: false,
         //items: [mapPanel, panel_west, earth]
-        items: [mapPanel, panel_west]
+        items: [mapPanel, panel_west, earth]
       }
     });
   }
