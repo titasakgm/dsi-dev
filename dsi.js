@@ -46,7 +46,9 @@ Ext.application({
     // Add Bing Map
     // API key for http://203.151.201.129/dsi
     var apiKey = "AnXErkelqCPb0UC5K-lCookgNa4-IwF1Cehgg9En9wcFz7iGblBxbZfm4484_qqK";
-        
+    
+    OpenLayers.ProxyHost = "/cgi-bin/proxy.cgi?url=";
+    
     map = new OpenLayers.Map({
       projection: new OpenLayers.Projection("EPSG:900913"),
       displayProjection: new OpenLayers.Projection("EPSG:4326"),
@@ -386,12 +388,12 @@ Ext.application({
       // unselect feature when the popup
       // is closed
       popup1.on({
-          close: function() {
-              if(OpenLayers.Util.indexOf(pointLayer1.selectedFeatures,
-                                         this.feature) > -1) {
-                  selectCtrl1.unselect(this.feature);
-              }
+        close: function() {
+          if(OpenLayers.Util.indexOf(pointLayer1.selectedFeatures,
+            this.feature) > -1) {
+            selectCtrl1.unselect(this.feature);
           }
+        }
       });
       popup1.show();
     }
@@ -433,48 +435,7 @@ Ext.application({
       popup2.show();
     }
 
-    var tt1a = 'แสดงชั้นข้อมูล KML Layer 1';
-    var tt1x = 'ลบชั้นข้อมูล KML Layer 1';
-    // Add KML Button to load kml/lines.kml to vectorLayer
-    var btn_kml1 = new Ext.Button({
-      id: 'id_btn_kml1'
-      ,iconCls: 'layer1'
-      ,tooltip: tt1a
-      ,handler: function(){
-        if (this.iconCls == 'layer1') {
-          pointLayer1 = new OpenLayers.Layer.Vector("Layer 1", {
-            projection: gcs
-            ,iconCls: 'layer1'
-            ,strategies: [new OpenLayers.Strategy.Fixed()]
-            ,protocol: new OpenLayers.Protocol.HTTP({
-              url: "kml/layer_1.kml"
-              ,format: new OpenLayers.Format.KML({
-                extractStyles: true
-                ,extractAttributes: true
-                ,maxDepth: 1
-              })
-            })
-          });
-          pointLayer1.events.on({
-            featureselected: function(e) {
-              createPopup1(e.feature);
-              }
-          });
-          selectCtrl1 = new OpenLayers.Control.SelectFeature(pointLayer1);
-          map.addLayer(pointLayer1);
-          map.addControl(selectCtrl1); 
-          selectCtrl1.activate();
-          this.setIconCls('layer1_del');
-          this.setTooltip(tt1x);
-        } else {
-          map.removeControl(selectCtrl1);
-          map.removeLayer(pointLayer1);
-          this.setIconCls('layer1');
-          this.setTooltip(tt1a);
-        }
-      }
-    });
-    toolbarItems.push(btn_kml1);
+    
 
     // Add KML Button to load kml/lines.kml to vectorLayer
     var tt2a = 'แสดงชั้นข้อมูล KML Layer 2';
@@ -516,7 +477,7 @@ Ext.application({
         }
       }
     });
-    toolbarItems.push(btn_kml2);
+    //toolbarItems.push(btn_kml2);
 
     toolbarItems.push("-");
         
@@ -605,6 +566,45 @@ Ext.application({
     utmgrid.hideInTree = true;
     utmgrid.setVisibility(false);
 
+    v_style = new OpenLayers.Style({
+      'fillColor': '#669933'
+      ,'fillOpacity': .8
+      ,'strokeColor': '#aaee77'
+      ,'strokeWidth': 3
+      ,'pointRadius': 8
+    });
+    
+    // Blank style
+    v_style = new OpenLayers.Style({});    
+    v_style_map = new OpenLayers.StyleMap({'default': v_style});    
+    sym_lookup = {
+      'layer_1': {
+                    'backgroundGraphic': 'http://203.151.201.129/dsix/img/icon_marker_blue.png'
+                    ,'backgroundWidth': 32
+                    ,'backgroundHeight': 32
+                    ,'backgroundYOffset': -32
+                  }
+      ,'layer_2': {
+                    'backgroundGraphic': 'http://203.151.201.129/dsix/img/icon_marker_green.png'
+                    ,'backgroundWidth': 32
+                    ,'backgroundHeight': 32
+                    ,'backgroundYOffset': -32
+                  }                  
+    };
+    v_style_map.addUniqueValueRules('default','kmlname',sym_lookup);
+
+    pointLayer = new OpenLayers.Layer.Vector("Custom Layer", {
+      projection: gcs
+      ,strategies: [new OpenLayers.Strategy.BBOX()]
+      ,protocol:  new OpenLayers.Protocol.WFS({
+                    srsName: 'EPSG:4326'
+                    ,url: "http://127.0.0.1/cgi-bin/mapserv?map=/ms603/map/wfs-postgis.map&SERVICE=WFS&srsName=EPSG:4326"
+                    ,featureType: "kml"
+                    ,featurePrefix: "feature"
+                  })   
+      ,styleMap: v_style_map
+    });
+    
     mapPanel = Ext.create('GeoExt.panel.Map', {
       border: true,
       region: "center",
@@ -614,8 +614,8 @@ Ext.application({
       zoom: 6,
       layers: [
         
-        //pointLayer,
-
+        pointLayer,
+        
         new OpenLayers.Layer.WMS(
           "ป่าชายเลน ปี 2552",
           "http://203.151.201.129/cgi-bin/mapserv",
@@ -694,6 +694,7 @@ Ext.application({
           {map: '/ms603/map/wms-dsi.map', layers: 'contour', transparent: true},
           {isBaseLayer: false,visibility: false, iconCls: 'dem'}
         ),
+        
         new OpenLayers.Layer.Google(
           "Google Hybrid",
           {type: google.maps.MapTypeId.HYBRID, numZoomLevels: 20,sphericalMercator: true, iconCls: 'google' }
@@ -852,7 +853,7 @@ Ext.application({
         layout: 'border',
         deferredRender: false,
         //items: [mapPanel, panel_west, earth]
-        items: [mapPanel, panel_west, earth]
+        items: [mapPanel, panel_west]
       }
     });
   }

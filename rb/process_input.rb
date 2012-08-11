@@ -100,4 +100,4 @@ Content-type: text/html
 #{data.to_json}
 EOF
 
-generate_kml(kmlname)
+#generate_kml(kmlname)

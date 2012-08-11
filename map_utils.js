@@ -10,13 +10,15 @@ Ext.Loader.setConfig({
 
 var map, mapPanel, tree, store;
 var vectorLayer;
-var pointLayer1, pointSelectControl1, selectedFeature1, popup1, info1;
+var pointLayer, pointLayer1, pointSelectControl1, selectedFeature1, popup1, info1;
 var pointLayer2, pointSelectControl2, selectedFeature2, popup2, info2;
 var overlay, panel_west, markers, ge, hili;
 var gcs = new OpenLayers.Projection("EPSG:4326");
 var merc = new OpenLayers.Projection("EPSG:900913");
 var utm = new OpenLayers.Projection("EPSG:32647");
 var indian = new OpenLayers.Projection("EPSG:24047");
+
+var v_style, v_style_map, sym_lookup;
 
 google.load("earth", "1");
 
@@ -515,8 +517,13 @@ var report_utm = function(utmn, utme, zone) {
 };
 
 var test_gps_utm = function(){
-  Ext.getCmp('utmn').setValue(1536201);
-  Ext.getCmp('utme').setValue(669221);
+  if (Ext.getCmp('zone47').checked) {
+    Ext.getCmp('utmn').setValue(1536195.1807);
+    Ext.getCmp('utme').setValue(669189.2284);    
+  } else {
+    Ext.getCmp('utmn').setValue(1540101.0761);
+    Ext.getCmp('utme').setValue(20494.2993);
+  }
 }
 
 var gps_utm = Ext.create("Ext.form.Panel",{
@@ -729,8 +736,13 @@ var report_utm_indian = function(utmni, utmei, zonei) {
 };
 
 var test_gps_utm_indian = function(){
-  Ext.getCmp('utmni').setValue(1536078);
-  Ext.getCmp('utmei').setValue(669198);
+  if (Ext.getCmp('zone47i').checked) {
+    Ext.getCmp('utmni').setValue(1535891.7973);
+    Ext.getCmp('utmei').setValue(669523.2828);    
+  } else {
+    Ext.getCmp('utmni').setValue(1539787.7522);
+    Ext.getCmp('utmei').setValue(20913.1788);    
+  }
 }
 
 var gps_utm_indian = Ext.create("Ext.form.Panel",{
