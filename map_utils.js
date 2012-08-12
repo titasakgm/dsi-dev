@@ -10,8 +10,9 @@ Ext.Loader.setConfig({
 
 var map, mapPanel, tree, store;
 var vectorLayer;
-var pointLayer, pointLayer1, pointSelectControl1, selectedFeature1, popup1, info1;
-var pointLayer2, pointSelectControl2, selectedFeature2, popup2, info2;
+var pointLayer, addPointLayer;
+var popup, frm_input_ctrl;
+var del_feat_ctrl;
 var overlay, panel_west, markers, ge, hili;
 var gcs = new OpenLayers.Projection("EPSG:4326");
 var merc = new OpenLayers.Projection("EPSG:900913");
@@ -112,7 +113,6 @@ vectorLayer = new OpenLayers.Layer.Vector("vectorLayer", {
   displayInLayerSwitcher: true
   ,hideIntree: true
   ,styleMap: styles
-  ,rendererOptions: {zIndexing: true}
 });
 
 // Add Popup: create popup on "featureselected" 05/08/2012
@@ -297,7 +297,8 @@ function onFeatureSelect(feature) {
 }
 
 function onPopupClose(evt) {
-  selectControl.unselect(selectedFeature);
+  //frm_input_ctrl.unselect(selectedFeature);
+  frm_input_ctrl.unselectAll();
 }
 
 function onFeatureUnselect(feature) {
@@ -355,7 +356,7 @@ var report = function(lodd,lomm,loss,ladd,lamm,lass) {
       var p2 = p1.transform(gcs,merc);
       map.setCenter(p2, 14);
 
-      var size = new OpenLayers.Size(64,64);
+      var size = new OpenLayers.Size(48,48);
       var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
       var icon = new OpenLayers.Icon('img/icon_marker.png', size, offset);
       markers.addMarker(new OpenLayers.Marker(p2,icon));
@@ -507,7 +508,7 @@ var report_utm = function(utmn, utme, zone) {
       var p2 = p1.transform(gcs,merc);
       map.setCenter(p2, 14);
 
-      var size = new OpenLayers.Size(64,64);
+      var size = new OpenLayers.Size(48,48);
       var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
       var icon = new OpenLayers.Icon('img/icon_marker.png', size, offset);
       markers.addMarker(new OpenLayers.Marker(p2,icon));
@@ -675,7 +676,7 @@ var report_utm = function(utmn, utme, zone) {
       var p2 = p1.transform(gcs,merc);
       map.setCenter(p2, 14);
 
-      var size = new OpenLayers.Size(64,64);
+      var size = new OpenLayers.Size(48,48);
       var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
       var icon = new OpenLayers.Icon('img/icon_marker.png', size, offset);
       markers.addMarker(new OpenLayers.Marker(p2,icon));
@@ -726,7 +727,7 @@ var report_utm_indian = function(utmni, utmei, zonei) {
       var p2 = p1.transform(gcs,merc);
       map.setCenter(p2, 14);
 
-      var size = new OpenLayers.Size(64,64);
+      var size = new OpenLayers.Size(48,48);
       var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
       var icon = new OpenLayers.Icon('img/icon_marker.png', size, offset);
       markers.addMarker(new OpenLayers.Marker(p2,icon));
@@ -1074,8 +1075,7 @@ var check_forest_info = function(layer,ll) {
 };
 
 // Add Popup: create select feature control 05/08/2012
-var popup;
-var selectCtrl = new OpenLayers.Control.SelectFeature(vectorLayer);
+frm_input_ctrl = new OpenLayers.Control.SelectFeature(vectorLayer);
 
 // Add Popup: define "createPopup" function + Input Form 05/08/2012
 var frm_input = Ext.create('Ext.form.Panel', {
@@ -1146,22 +1146,30 @@ var frm_input = Ext.create('Ext.form.Panel', {
             Ext.getCmp('id_upload_title').setValue(this.value);
           }
         }
-
-
     },{
         xtype : 'combo'
-        ,fieldLabel : 'Layer'
-        ,id: 'id_layer'
+        ,fieldLabel : 'Select Layer'
+        ,id: 'id_icon'
+        
+        ,listConfig: {
+          getInnerTpl: function() {
+            // here you place the images in your combo
+            var tpl = '<div>'+
+                      '<img src="img/{icon}.png" align="left">&nbsp;&nbsp;'+
+                      '{text}</div>';
+            return tpl;
+          }
+        }
         ,store : new Ext.data.SimpleStore({
-          data : [[1, 'Layer 1'], [2, 'Layer 2']]
+          data : [['icon1', 'Layer 1'],['icon2','Layer 2']]
           ,id : 0
-          ,fields : ['value', 'text']
+          ,fields : ['icon','text']
         })
-        ,valueField : 'value'
+        ,valueField : 'icon'
         ,displayField : 'text'
         ,triggerAction : 'all'
         ,editable : false
-        ,name : 'layer'
+        ,name : 'icon'
       },{
         xtype: 'textfield'
         ,fieldLabel: 'Description'
@@ -1267,22 +1275,18 @@ var frm_input = Ext.create('Ext.form.Panel', {
               // Reset input form
               // Hide popup
               // Remove all features
-              // Check if layer_1 is active --> layer_1.refresh()
-              // Check if layer_2 is active --> layer_2.refresh()  
+              // Refresh pointLayer
               vectorLayer.removeAllFeatures();
-              if (Ext.getCmp('id_layer').value == 1) { // Add Layer 1 point
-                if (pointLayer1) {
-                  pointLayer1.setVisibility(true);
-                  pointLayer1.refresh();
-                }
-              } else if (Ext.getCmp('id_layer').value == 2) { // Layer 2 is active
-                if (pointLayer2) {
-                  pointLayer2.setVisibility(true);
-                  pointLayer2.refresh();
-                }
-              }
               frm_input.getForm().reset();
               popup.hide();
+              // Update new feature in pointLayer
+              if (pointLayer) {
+                map.removeLayer(pointLayer);
+                pointLayer = null
+              }
+              addPointLayer();
+              map.addLayer(pointLayer);
+              frm_input_ctrl.deactivate();
             }
           });        
         }
@@ -1330,11 +1334,11 @@ function createPopup(feature) {
       close: function() {
         if(OpenLayers.Util.indexOf(vectorLayer.selectedFeatures,
           this.feature) > -1) {
-          selectCtrl.unselect(this.feature);
+          frm_input_ctrl.unselect(this.feature);
         }
       }
     });
   }
-  popup.center();
+  //popup.center();
   popup.show();
 }

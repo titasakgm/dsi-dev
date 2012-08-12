@@ -12,8 +12,16 @@
 .add_kml {
   background-image: url("img/icon_kml.png") !important; 
 }
+
 img {
   border: none;
+}
+
+.imgpopup {
+  border: solid 1px green;
+  margin: 10px;
+  width: 100px;
+  align: left;
 }
 
 div.olControlMousePosition {
@@ -198,4 +206,17 @@ div.olLayerGoogleCopyright {
 .layer2_del {
   background-image: url("img/icon_del_layer2.png") !important;
 }
+
+.del_feature_in_layer {
+  background-image: url("img/icon_delete_feature.png") !important;
+}
+
+.add_layer {
+  background-image: url("img/icon_add_layer.png") !important;
+}
+
+.del_layer {
+  background-image: url("img/icon_del_layer.png") !important;
+}
+
 
