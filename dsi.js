@@ -78,7 +78,16 @@ Ext.require([
         o.collapse();
       }
     });
-    var toolbarItems = [],action;
+    
+    // Create all objects declared in map_utils.js
+    create_styles();
+    create_layer_vectorLayer();
+    create_layer_markers();
+    create_layer_hili();
+    
+    //create_layer_pointLayer(); should WAIT until user click Add Custom Layer
+
+    var toolbarItems = [], action;
     
     action = Ext.create('GeoExt.Action',{
       tooltip: 'กลับสู่แผนที่เริ่มต้น',
@@ -217,6 +226,8 @@ Ext.require([
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
 
+    toolbarItems.push("-");
+
     // Add Input Form 05/08/2012
     action = Ext.create('GeoExt.Action', {
       iconCls: "info"
@@ -244,7 +255,11 @@ Ext.require([
       ,pressed: false
       ,handler: function() {
         if (this.iconCls == 'add_layer') {
-          addPointLayer();
+          if (pointLayer) { // just in case
+            map.removeLayer(pointLayer);
+            pointLayer = null;
+          }
+          create_layer_pointLayer();
           map.addLayer(pointLayer);
           this.setIconCls('del_layer');
           this.setTooltip(pl_ttx);
@@ -258,16 +273,17 @@ Ext.require([
     });
     toolbarItems.push(btn_custom_layer);
  
+    // Add button to delete a feature from pointLayer and kml table in dsi database
     var btn_del_feat = new Ext.Button({
       iconCls: 'del_feature_in_layer'
       ,tooltip: 'ลบข้อมูลออกจากฐานข้อมูล โดย click mouse ณ ตำแหน่งที่ต้องการลบ'
       ,enableToggle: true
       ,handler: function(toggled){
         if (toggled.pressed) {
-          popupPointLayer.deactivate();
+          ctrl_popup_pointLayer.deactivate();
           del_feat_ctrl.activate();
         } else {
-          popupPointLayer.activate();
+          ctrl_popup_pointLayer.activate();
           del_feat_ctrl.deactivate();
         }
       },
@@ -275,6 +291,8 @@ Ext.require([
       pressed: false
     });
     toolbarItems.push(btn_del_feat);
+
+    toolbarItems.push("-");
 
     // Measure Length control
     ctrl_measure_length = new OpenLayers.Control.Measure(OpenLayers.Handler.Path, {
@@ -473,149 +491,27 @@ Ext.require([
     utmgrid.displayInLayerSwitcher = false;
     utmgrid.hideInTree = true;
     utmgrid.setVisibility(false);
-    v_style = new OpenLayers.Style({
-      'fillColor': '#669933'
-      ,'fillOpacity': .8
-      ,'strokeColor': '#aaee77'
-      ,'strokeWidth': 3
-      ,'pointRadius': 8
+
+    // Add Bing Map
+    bing_road = new OpenLayers.Layer.Bing({
+      name: "Bing Road",
+      key: apiKey,
+      type: "Road",
+      iconCls: 'bing'
+    });
+    bing_hybrid = new OpenLayers.Layer.Bing({
+      name: "Bing Hybrid",
+      key: apiKey,
+      type: "AerialWithLabels",
+      iconCls: 'bing'
+    });
+    bing_aerial = new OpenLayers.Layer.Bing({
+      name: "Bing Aerial",
+      key: apiKey,
+      type: "Aerial",
+      iconCls: 'bing'
     });
     
-    // Blank style
-    // v_style = new OpenLayers.Style({});
-    
-    v_style_map = new OpenLayers.StyleMap({'default': v_style});
-    sym_lookup = {
-      'layer_1': {
-                    'backgroundGraphic': 'http://203.151.201.129/dsix/img/icon_marker_blue.png'
-                    ,'backgroundWidth': 32
-                    ,'backgroundHeight': 32
-                    ,'backgroundYOffset': -32
-                  }
-      ,'layer_2': {
-                    'backgroundGraphic': 'http://203.151.201.129/dsix/img/icon_marker_green.png'
-                    ,'backgroundWidth': 32
-                    ,'backgroundHeight': 32
-                    ,'backgroundYOffset': -32
-                  }                  
-    };
-    v_style_map.addUniqueValueRules('default','kmlname',sym_lookup);
-
-    addPointLayer = function() {
-      pointLayer = new OpenLayers.Layer.Vector("Custom Layer", {
-        projection: gcs
-        ,strategies: [new OpenLayers.Strategy.BBOX(), new OpenLayers.Strategy.Refresh()]
-        ,protocol: new OpenLayers.Protocol.WFS({
-                      srsName: 'EPSG:4326'
-                      ,url: "http://127.0.0.1/cgi-bin/mapserv?map=/ms603/map/wfs-postgis.map&SERVICE=WFS&srsName=EPSG:4326"
-                      ,featureType: "kml"
-                      ,featurePrefix: "feature"
-                    })
-        ,styleMap: v_style_map
-      });
-      // Add "featureselected" on pointLayer 12/08/2012
-      
-      // Add popup when feature in pointLayer is clicked
-      popupPointLayer = new OpenLayers.Control.SelectFeature(pointLayer, {
-        clickout: false
-        ,hover: false
-        ,toggle: true
-        ,clickOut: true
-        ,multiple: false
-        ,box: false
-        ,eventListeners: {
-          featurehighlighted: onPointFeatureSelect
-          ,featureunhighlighted: onPointFeatureUnselect
-        }
-      });
-      map.addControl(popupPointLayer);
-      popupPointLayer.activate();
-      
-      function onPointFeatureSelect(feat){
-        // Open framedCloud popup on feat
-        sel_feat = feat;
-        var lon = feat.feature.geometry.x;
-        var lat = feat.feature.geometry.y;
-        var lonlat = new OpenLayers.LonLat(lon,lat); // This is merc already!
-        
-        feature = feat.feature;
-        var id = feature.attributes.id;
-        var name = feature.attributes.name;
-        var img = feature.attributes.imgname;
-        var imgurl = "./photos/" + feature.attributes.imgname;
-        var descr = feature.attributes.descr;
-        
-        content = "<h2>" + name + "(id:" + id + ")</h2>";
-        if (img) {
-          content += "<img class='imgpopup' src='" + imgurl + "' />";
-        }
-        content += descr;
-        
-        popup = new OpenLayers.Popup.FramedCloud("chicken",
-                feature.geometry.getBounds().getCenterLonLat(),
-                new OpenLayers.Size(250,180),
-                content,
-                null, true, onPointPopupClose);
-        feature.popup = popup;
-        
-        // Force the popup to always open to the top-right
-        popup.calculateRelativePosition = function() {
-            return 'tr';
-        };
-        map.addPopup(popup);
-      }
-
-      function onPointFeatureUnselect(event) {
-        var feature = event.feature;
-        if(feature.popup) {
-          map.removePopup(feature.popup);
-          feature.popup.destroy();
-          delete feature.popup;
-        }
-      }
-      
-      function onPointPopupClose(evt) {
-        popupPointLayer.unselectAll();
-      }
-
-      // Delete Feature in pointLayer 12/08/2012
-      var deleteFromDatabase = function(feature){
-        var id = feature.attributes.id;
-        var name = feature.attributes.name;
-        
-        Ext.Ajax.request({
-          url: 'rb/kml_delete.rb'
-          ,params: { id: id }
-          ,success: function(resp,opt) {
-            info('Result', 'ลบรายการ ' + name + ' ออกจากฐานข้อมูลเรียบร้อยแล้ว');            
-          }
-          ,failure: function(resp, opt) {
-            info('Warning', 'เกิดข้อผิดพลาดไม่สามารถลบรายการที่ต้องการได้');
-          }
-        });
-      };
-
-      var featureRemove = function(feature) {
-        var x = confirm("ต้องการลบ  " + feature.attributes.name + " ออกจากฐานข้อมูล ใช่หรือไม่ ?");
-        if (x == true) {
-          pointLayer.removeFeatures(feature);
-          //delete this feature from database
-          deleteFromDatabase(feature);
-        }
-      };
-  
-      var removeOptions = {
-        clickout: true
-        ,onSelect: featureRemove
-        ,toggle: true
-        ,multiple: false
-        ,hover: false
-      };
-      
-      del_feat_ctrl = new OpenLayers.Control.SelectFeature(pointLayer, removeOptions);
-      map.addControl(del_feat_ctrl);
-    }
-      
     mapPanel = Ext.create('GeoExt.panel.Map', {
       border: true,
       region: "center",
@@ -703,6 +599,8 @@ Ext.require([
           {isBaseLayer: false,visibility: false, iconCls: 'dem'}
         ),
         
+        bing_road, bing_hybrid, bing_aerial,
+        
         new OpenLayers.Layer.Google(
           "Google Hybrid",
           {type: google.maps.MapTypeId.HYBRID, numZoomLevels: 20,sphericalMercator: true, iconCls: 'google' }
@@ -728,26 +626,6 @@ Ext.require([
           {'type': YAHOO_MAP_HYB, sphericalMercator: true}
         ),
         */
-       
-        // Add Bing Map
-        new OpenLayers.Layer.Bing({
-          name: "Bing Road",
-          key: apiKey,
-          type: "Road",
-          iconCls: 'bing'
-        }),
-        new OpenLayers.Layer.Bing({
-          name: "Bing Hybrid",
-          key: apiKey,
-          type: "AerialWithLabels",
-          iconCls: 'bing'
-        }),
-        new OpenLayers.Layer.Bing({
-          name: "Bing Aerial",
-          key: apiKey,
-          type: "Aerial",
-          iconCls: 'bing'
-        }),
         
         hili,
         markers,
@@ -792,8 +670,7 @@ Ext.require([
         //children: tree_child
       }
     });
-  
-  
+    
     ///////////////////////////////////
     // TREE
     ///////////////////////////////////
@@ -864,5 +741,8 @@ Ext.require([
         ,items: [mapPanel, panel_west]
       }
     });
+      
+    // Set BaseLayer to bing_road
+    map.setBaseLayer(bing_road);
   }
 });

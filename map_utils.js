@@ -8,137 +8,48 @@ Ext.Loader.setConfig({
     }
 });
 
-var map, mapPanel, tree, store;
-var vectorLayer;
-var pointLayer, addPointLayer;
-var popup, frm_input_ctrl;
-var del_feat_ctrl;
-var overlay, panel_west, markers, ge, hili;
+// Global variables
+
+//define variable for framed cloud
+//disable the autosize for the purpose of our matrix
+OpenLayers.Popup.FramedCloud.prototype.autoSize = false;
+AutoSizeFramedCloud = OpenLayers.Class(OpenLayers.Popup.FramedCloud, {
+  'autoSize': true
+});
+
+AutoSizeFramedCloudMinSize = OpenLayers.Class(OpenLayers.Popup.FramedCloud, {
+  'autoSize': true, 
+  'minSize': new OpenLayers.Size(400,400)
+});
+
+AutoSizeFramedCloudMaxSize = OpenLayers.Class(OpenLayers.Popup.FramedCloud, {
+  'autoSize': true, 
+  'maxSize': new OpenLayers.Size(100,100)
+});
+
 var gcs = new OpenLayers.Projection("EPSG:4326");
 var merc = new OpenLayers.Projection("EPSG:900913");
 var utm = new OpenLayers.Projection("EPSG:32647");
 var indian = new OpenLayers.Projection("EPSG:24047");
 
+// Revised codes
+var map, mapPanel, tree, store;
+var bing_road, bing_hybrid, bing_aerial;
+var overlay, panel_west, ge;
+var styles, create_styles;
 var v_style, v_style_map, sym_lookup;
+var create_layer_vectorLayer, vectorLayer, frm_input_ctrl, frm_input, popup_vectorLayer;
+var create_layer_markers, marker, markers, popup_marker;
+var create_layer_hili, hili;
+var create_layer_pointLayer, pointLayer, ctrl_popup_pointLayer, popup_pointLayer, del_feat_ctrl;
 
 google.load("earth", "1");
 
-var styles = new OpenLayers.StyleMap({
-  "default": new OpenLayers.Style(null, {
-    rules: [
-      new OpenLayers.Rule({
-        symbolizer: {
-          "Point": {
-            pointRadius: 5,
-            graphicName: "square",
-            fillColor: "#EC940C",
-            fillOpacity: 0.75,
-            strokeWidth: 1,
-            strokeOpacity: 1,
-            strokeColor: "#3333aa"
-          },
-          "Line": {
-            strokeWidth: 2,
-            strokeOpacity: 1,
-            strokeColor: "#006600"
-          },
-          "Polygon": {
-            strokeWidth: 2,
-            strokeOpacity: 1,
-            fillColor: "#6666aa",
-            strokeColor: "#2222aa"
-          }
-        }
-      })
-    ]
-  }),
-  "select": new OpenLayers.Style(null, {
-    rules: [
-      new OpenLayers.Rule({
-        symbolizer: {
-          "Point": {
-            pointRadius: 5,
-            graphicName: "square",
-            fillColor: "#EC940C",
-            fillOpacity: 0.25,
-            strokeWidth: 2,
-            strokeOpacity: 1,
-            strokeColor: "#0000ff"
-          },
-          "Line": {
-            strokeWidth: 3,
-            strokeOpacity: 1,
-            strokeColor: "#0000ff"
-          },
-          "Polygon": {
-            strokeWidth: 2,
-            strokeOpacity: 1,
-            fillColor: "#0000ff",
-            strokeColor: "#0000ff"
-          }
-        }
-      })
-    ]
-  }),
-  "temporary": new OpenLayers.Style(null, {
-    rules: [
-      new OpenLayers.Rule({
-        symbolizer: {
-          "Point": {
-            graphicName: "square",
-            pointRadius: 5,
-            fillColor: "#EC940C",
-            fillOpacity: 0.25,
-            strokeWidth: 2,
-            strokeColor: "#0000ff"
-          },
-          "Line": {
-            strokeWidth: 3,
-            strokeOpacity: 1,
-            strokeColor: "#0000ff"
-          },
-          "Polygon": {
-            strokeWidth: 2,
-            strokeOpacity: 1,
-            strokeColor: "#0000ff",
-            fillColor: "#0000ff"
-          }
-        }
-      })
-    ]
-  })
-});
+//////////////////////////////////////////////
+// Utilty functions
+//////////////////////////////////////////////
 
-vectorLayer = new OpenLayers.Layer.Vector("vectorLayer", {
-  displayInLayerSwitcher: true
-  ,hideIntree: true
-  ,styleMap: styles
-});
-
-// Add Popup: create popup on "featureselected" 05/08/2012
-vectorLayer.events.on({
-  featureselected: function(e) {
-    var chk = Ext.getCmp('id_select_feat').pressed;
-    if (chk == false)
-      return false;
-    else 
-      createPopup(e.feature);
-  }
-});
-
-markers = new OpenLayers.Layer.Markers( "Markers", {
-  displayInLayerSwitcher: true,
-  hideIntree: true
-});
-
-hili = new OpenLayers.Layer.WMS("Hili",
-  "http://203.151.201.129/cgi-bin/mapserv",
-  {map: '/ms603/map/hili.map', layers: 'hili', 'transparent': true},
-  {isBaseLayer: false, displayInLayerSwitcher: true, singleTile: true, ratio: 1,hideIntree: true }
-);
-hili.setOpacity(0);
-
-var info = function(title, msg) {
+function info(title, msg) {
   Ext.Msg.show({
     title: title,
     msg: msg,
@@ -148,10 +59,560 @@ var info = function(title, msg) {
     buttons: Ext.Msg.OK
   });
 };
+
+create_styles = function() {
+  // Modify drawpoint from default orange point
+  styles = new OpenLayers.StyleMap({
+    "default": new OpenLayers.Style(null, {
+      rules: [
+        new OpenLayers.Rule({
+          symbolizer: {
+            "Point": {
+              pointRadius: 5,
+              graphicName: "square",
+              fillColor: "#EC940C",
+              fillOpacity: 0.75,
+              strokeWidth: 1,
+              strokeOpacity: 1,
+              strokeColor: "#3333aa"
+            },
+            "Line": {
+              strokeWidth: 2,
+              strokeOpacity: 1,
+              strokeColor: "#006600"
+            },
+            "Polygon": {
+              strokeWidth: 2,
+              strokeOpacity: 1,
+              fillColor: "#6666aa",
+              strokeColor: "#2222aa"
+            }
+          }
+        })
+      ]
+    }),
+    "select": new OpenLayers.Style(null, {
+      rules: [
+        new OpenLayers.Rule({
+          symbolizer: {
+            "Point": {
+              pointRadius: 5,
+              graphicName: "square",
+              fillColor: "#EC940C",
+              fillOpacity: 0.25,
+              strokeWidth: 2,
+              strokeOpacity: 1,
+              strokeColor: "#0000ff"
+            },
+            "Line": {
+              strokeWidth: 3,
+              strokeOpacity: 1,
+              strokeColor: "#0000ff"
+            },
+            "Polygon": {
+              strokeWidth: 2,
+              strokeOpacity: 1,
+              fillColor: "#0000ff",
+              strokeColor: "#0000ff"
+            }
+          }
+        })
+      ]
+    }),
+    "temporary": new OpenLayers.Style(null, {
+      rules: [
+        new OpenLayers.Rule({
+          symbolizer: {
+            "Point": {
+              graphicName: "square",
+              pointRadius: 5,
+              fillColor: "#EC940C",
+              fillOpacity: 0.25,
+              strokeWidth: 2,
+              strokeColor: "#0000ff"
+            },
+            "Line": {
+              strokeWidth: 3,
+              strokeOpacity: 1,
+              strokeColor: "#0000ff"
+            },
+            "Polygon": {
+              strokeWidth: 2,
+              strokeOpacity: 1,
+              strokeColor: "#0000ff",
+              fillColor: "#0000ff"
+            }
+          }
+        })
+      ]
+    })
+  });
+}
+
+create_layer_vectorLayer = function() { 
+  vectorLayer = new OpenLayers.Layer.Vector("vectorLayer", {
+    displayInLayerSwitcher: true
+    ,hideIntree: true
+    ,styleMap: styles
+  });
+  
+  // Add Popup: create popup on "featureselected" 05/08/2012
+  vectorLayer.events.on({
+    featureselected: function(e) {
+      var chk = Ext.getCmp('id_select_feat').pressed;
+      if (chk == false)
+        return false;
+      else 
+        create_popup_vectorLayer(e.feature);
+    }
+  });
+  
+  // Add Popup: create select feature control 05/08/2012
+  frm_input_ctrl = new OpenLayers.Control.SelectFeature(vectorLayer);
+
+  function create_popup_vectorLayer(feature) {
+    // convert from merc(900913) to gcs(4326)
+    var feat = feature.clone();
+    feat.geometry.transform(merc, gcs);
     
+    var curr_loc = feat.geometry.toString();
+    Ext.getCmp('id_location').setValue(curr_loc);
+    
+    if (!popup_vectorLayer) {
+      popup_vectorLayer = Ext.create('GeoExt.window.Popup', {
+        title: 'DSI Popup'
+        ,id: 'id_popup'
+        ,location: feature
+        ,width:604
+        ,items: [ frm_input ]
+        ,maximizable: true
+        ,collapsible: true
+        ,closeAction: 'hide'
+        ,anchorPosition: 'auto'
+      });
+      // unselect feature when the popup is closed
+      popup_vectorLayer.on({
+        close: function() {
+          if(OpenLayers.Util.indexOf(vectorLayer.selectedFeatures, this.feature) > -1) {
+            frm_input_ctrl.unselect(this.feature);
+          }
+        }
+      });
+    }
+    //popup_vectorLayer.center(); ERROR: popup has no method center ??
+    popup_vectorLayer.show();
+  }
+
+  // Add Popup: define "create_popup_vectorLayer" function + Input Form
+  frm_input = Ext.create('Ext.form.Panel', {
+    title: 'Inner Tabs'
+    ,id: 'id_frm_input'
+    ,url: 'rb/process_input.rb'
+    ,bodyStyle:'padding:5px'
+    ,width: 600
+    ,fieldDefaults: {
+      labelAlign: 'top'
+      ,msgTarget: 'side'
+    }
+    ,defaults: {
+      anchor: '100%'
+    }
+    ,items: [{
+      layout:'column'
+      ,border:false
+      ,items:[{
+        columnWidth:.5
+        ,border:false
+        ,layout: 'anchor'
+        ,defaultType: 'textfield'
+        ,items: [{
+          fieldLabel: 'First Name'
+          ,name: 'first'
+          ,anchor:'95%'
+        },{
+          fieldLabel: 'Company'
+          ,name: 'company'
+          ,anchor:'95%'
+        }]
+      },{
+        columnWidth:.5
+        ,border:false
+        ,layout: 'anchor'
+        ,defaultType: 'textfield'
+        ,items: [{
+          fieldLabel: 'Last Name'
+          ,name: 'last'
+          ,anchor:'95%'
+        },{
+          fieldLabel: 'Email'
+          ,name: 'email'
+          ,vtype:'email'
+          ,anchor:'95%'
+        }]
+      }]
+    },{
+      xtype:'tabpanel'
+      ,plain:true
+      ,activeTab: 0
+      ,height:235
+      ,defaults:{bodyStyle:'padding:10px'}
+      ,items:[{
+        title:'Demo Input'
+        ,defaults: {width: 200}
+        ,items: [{
+          xtype: 'textfield'
+          ,fieldLabel: 'Title'
+          ,name: 'name'
+          ,allowBlank:false
+          //CHECK!!!
+          ,enableKeyEvents: true
+          ,listeners: {
+            keyup: function() {
+              Ext.getCmp('id_upload_title').setValue(this.value);
+            }
+          }
+        },{
+          xtype : 'combo'
+          ,fieldLabel : 'Select Layer'
+          ,id: 'id_icon'          
+          ,listConfig: {
+            getInnerTpl: function() {
+              // here you place the images in your combo
+              var tpl = '<div>'+
+                        '<img src="img/{icon}.png" align="left">&nbsp;&nbsp;'+
+                        '{text}</div>';
+              return tpl;
+            }
+          }
+          ,store : new Ext.data.SimpleStore({
+            // Add more layers in dropdown here
+            data : [['icon1', 'Layer 1'],['icon2','Layer 2']]
+            ,id : 0
+            ,fields : ['icon','text']
+          })
+          ,valueField : 'icon'
+          ,displayField : 'text'
+          ,triggerAction : 'all'
+          ,editable : false
+          ,name : 'icon'
+        },{
+          xtype: 'textfield'
+          ,fieldLabel: 'Description'
+          ,name: 'description'
+          ,allowBlank:false
+        },{
+          xtype: 'textareafield'
+          ,fieldLabel: 'Location'
+          ,name: 'location'
+          ,id: 'id_location'
+          ,width: '100%'
+          ,anchor: '100%'
+        }]
+      },{        
+        xtype: 'form'
+        ,title:'Upload Photo'
+        ,width: 500
+        ,frame: true
+        ,title: 'Upload photo'
+        ,bodyPadding: '10 10 0'
+        ,defaults: {
+          anchor: '100%'
+          ,xtype: 'textfield'
+          ,msgTarget: 'side'
+          ,labelWidth: 50
+        }
+        ,items: [{
+          fieldLabel: 'Title'
+          ,id: 'id_upload_title'
+          ,name: 'upload_title'
+          ,disabled: true
+        },{
+          xtype: 'filefield'
+          ,name: 'file'
+          ,id: 'id_file'
+          ,fieldLabel: 'Photo'
+          ,labelWidth: 50
+          ,msgTarget: 'side'
+          ,allowBlank: true
+          ,buttonText: ''
+          ,buttonConfig: {
+            iconCls: 'upload'
+          }
+        },{
+          fieldLabel: 'File saved'
+          ,name: 'origname'
+          ,id: 'id_origname'
+        },{
+          xtype: 'hidden'
+          ,name: 'imgname'
+          ,id: 'id_imgname'
+        }]
+        ,buttons: [{
+          text: 'Upload'
+          ,handler: function() {
+            var form = this.up('form').getForm();
+            if (form.isValid()) {
+              form.submit({
+                url: 'rb/file-upload.rb'
+                ,waitMsg: 'Uploading photo...'
+                //,success: function(response, opts) { NOT WORKING ?!?!?
+                ,success: function(fp, o) {
+                  var data = Ext.decode(o.response.responseText);  
+                  var imgname = data.imgname;
+                  var origname = data.origname;
+                  Ext.getCmp('id_imgname').setValue(imgname);
+                  Ext.getCmp('id_origname').setValue(origname);
+                  info('Success', 'File ' + origname + ' has been uploaded!');
+                }
+              })
+            }
+          }
+        },{
+          text: 'Reset',
+          handler: function() {
+            this.up('form').getForm().reset();
+          }
+        }]
+      },{
+        cls: 'x-plain'
+        ,title: 'WYSIWYG'
+        ,layout: 'fit'
+        ,items: {
+          xtype: 'htmleditor'
+          ,name: 'wysiwyg'
+          ,fieldLabel: 'WYSIWYG'
+        }
+      }]
+    }],
+    buttons: [{
+      text: 'Save'
+      ,handler: function() {
+        frm_input.getForm().submit({
+          success: function(f,a) {
+            Ext.Msg.show({
+              title: 'Info'
+              ,msg: '1 feature added!'
+              ,buttons: Ext.Msg.OK
+              ,icon: Ext.Msg.INFO
+              ,fn: function(btn) {
+                // Remove all features
+                // Reset input form
+                // Hide popup
+                // Refresh pointLayer
+                vectorLayer.removeAllFeatures();
+                frm_input.getForm().reset();
+                popup_vectorLayer.hide();
+                // Update new feature in pointLayer ?? better solution ??
+                if (pointLayer) {
+                  map.removeLayer(pointLayer);
+                  pointLayer = null
+                }
+                create_layer_pointLayer();
+                map.addLayer(pointLayer);
+                frm_input_ctrl.deactivate();
+              }
+            });        
+          }
+          ,failure: function(f,a) {
+            Ext.Msg.alert('Error', 'Failed!!');
+          }
+        })
+      }
+    },{
+      text: 'Cancel'
+      ,handler: function() {
+        var o = Ext.getCmp('id_location');
+        // Remember current location
+        var curr_loc = o.getValue();
+        frm_input.getForm().reset();
+        // Set current location back to form
+        o.setValue(curr_loc);
+      }
+    }]
+  });
+}
+
+create_layer_pointLayer = function() {
+  // Blank style
+  // v_style = new OpenLayers.Style({});
+  var v_style = new OpenLayers.Style({
+    'fillColor': '#ffffff'
+    ,'fillOpacity': 0.9
+    ,'strokeColor': '#aaee77'
+    ,'strokeWidth': 3
+    ,'pointRadius': 5
+  });
+  var v_style_map = new OpenLayers.StyleMap({'default': v_style});
+  var sym_lookup = {
+    'layer_1': {
+                  'backgroundGraphic': 'img/icon_marker_green.png'
+                  ,'backgroundWidth': 32
+                  ,'backgroundHeight': 32
+                  ,'backgroundYOffset': -32
+                }
+    ,'layer_2': {
+                  'backgroundGraphic': 'img/icon_marker_blue.png'
+                  ,'backgroundWidth': 32
+                  ,'backgroundHeight': 32
+                  ,'backgroundYOffset': -32
+                }                  
+  };
+  v_style_map.addUniqueValueRules('default','kmlname',sym_lookup);
+
+  // Create pointLayer here
+  // Load features from postgis
+  // default featurePrefix for mapserver is "ms" BUT must specify in map file
+  // projection gcs MUST be included to display features correctly
+  pointLayer = new OpenLayers.Layer.Vector("Custom Layer", {
+    projection: gcs
+    ,strategies: [new OpenLayers.Strategy.BBOX(), new OpenLayers.Strategy.Refresh()]
+    ,protocol: new OpenLayers.Protocol.WFS({
+                  srsName: 'EPSG:4326'
+                  ,url: "http://127.0.0.1/cgi-bin/mapserv?map=/ms603/map/wfs-postgis.map&SERVICE=WFS&srsName=EPSG:4326"
+                  ,featureType: "kml"
+                  ,featurePrefix: "feature"
+                })
+    ,styleMap: v_style_map
+  });
+ 
+  // Add popup when feature in pointLayer is clicked
+  ctrl_popup_pointLayer = new OpenLayers.Control.SelectFeature(pointLayer, {
+    clickout: false
+    ,hover: false
+    ,toggle: true
+    ,clickOut: true
+    ,multiple: false
+    ,box: false
+    ,eventListeners: {
+      featurehighlighted: onPointFeatureSelect
+      ,featureunhighlighted: onPointFeatureUnselect
+    }
+  });
+  map.addControl(ctrl_popup_pointLayer);
+  ctrl_popup_pointLayer.activate();
+  
+  function onPointFeatureSelect(feat){
+    // Open framedCloud popup on feat
+    sel_feat = feat;
+    var lon = feat.feature.geometry.x;
+    var lat = feat.feature.geometry.y;
+    var lonlat = new OpenLayers.LonLat(lon,lat); // This is merc already!
+    
+    feature = feat.feature;
+    var id = feature.attributes.id;
+    var name = feature.attributes.name;
+    var img = feature.attributes.imgname;
+    var imgurl = "./photos/" + feature.attributes.imgname;
+    var descr = feature.attributes.descr;
+    
+    // Will be displayed in popup on click at feature
+    content = "<h2>" + name + "(id:" + id + ")</h2>";
+    if (img) {
+      content += "<img class='imgpopup' src='" + imgurl + "' />";
+    }
+    content += descr;
+    
+    popup_pointLayer = new OpenLayers.Popup.FramedCloud("chicken",
+            feature.geometry.getBounds().getCenterLonLat(),
+            new OpenLayers.Size(250,180),
+            content,
+            null, true, onPointPopupClose);
+    feature.popup = popup_pointLayer;
+    
+    // Force the popup to always open to the top-right
+    popup_pointLayer.calculateRelativePosition = function() {
+        return 'tr';
+    };
+    map.addPopup(popup_pointLayer);
+  }
+
+  function onPointFeatureUnselect(event) {
+    var feature = event.feature;
+    if(feature.popup) {
+      map.removePopup(feature.popup);
+      feature.popup.destroy();
+      delete feature.popup;
+    }
+  }
+  
+  function onPointPopupClose(evt) {
+    ctrl_popup_pointLayer.unselectAll();
+  }
+
+  // Delete Feature in pointLayer both in map and database
+  var deleteFromDatabase = function(feature){
+    var id = feature.attributes.id;
+    var name = feature.attributes.name;
+    
+    Ext.Ajax.request({
+      url: 'rb/kml_delete.rb'
+      ,params: { id: id }
+      ,success: function(resp,opt) {
+        info('Result', 'ลบรายการ ' + name + ' ออกจากฐานข้อมูลเรียบร้อยแล้ว');            
+      }
+      ,failure: function(resp, opt) {
+        Ext.Msg.alert('Warning', 'เกิดข้อผิดพลาดไม่สามารถลบรายการที่ต้องการได้');
+      }
+    });
+  };
+
+  var featureRemove = function(feature) {
+    var question = "ต้องการลบ  " + feature.attributes.name + " ออกจากฐานข้อมูล ใช่หรือไม่ ?";
+    Ext.Msg.confirm(
+      'Confirm'
+      ,question
+      ,function (btn){
+        if(btn=='yes') {
+          pointLayer.removeFeatures(feature);
+          //delete this feature from database
+          deleteFromDatabase(feature);
+        }
+      }
+    )
+  };
+
+  var removeOptions = {
+    clickout: true
+    ,onSelect: featureRemove
+    ,toggle: true
+    ,multiple: false
+    ,hover: false
+  };
+  
+  del_feat_ctrl = new OpenLayers.Control.SelectFeature(pointLayer, removeOptions);
+  map.addControl(del_feat_ctrl);
+  // del_feat_ctrl is not activated yet
+}
+
+create_layer_markers = function() {
+  markers = new OpenLayers.Layer.Markers( "Markers", {
+    displayInLayerSwitcher: true,
+    hideIntree: true
+  });
+}
+
+create_layer_hili = function() {
+  hili = new OpenLayers.Layer.WMS("Hili"
+    ,"http://203.151.201.129/cgi-bin/mapserv"
+    ,{
+      map: '/ms603/map/hili.map'
+      ,layers: 'hili'
+      ,'transparent': true
+    },{
+      isBaseLayer: false
+      ,displayInLayerSwitcher: true
+      ,singleTile: true
+      ,ratio: 1
+      ,hideIntree: true
+    }
+  );
+  hili.setOpacity(0);
+}
+
 //////////////////////////////////////////////
 // GPS
-////////////////////////////////////////////
+//////////////////////////////////////////////
+
 function dms2dd(ddd,mm,ss){
   var d = parseFloat(ddd);
   var m = parseFloat(mm)/60.0;
@@ -192,7 +653,7 @@ function setMarker(lon, lat, msg){
 
   var markerClick = function(evt) {
     if (this.popup == null) {
-      this.popup = this.createPopup(this.closeBox);
+      this.popup = this.create_popup_marker(this.closeBox);
       map.addPopup(this.popup);
       this.popup.show();
     } else {
@@ -204,52 +665,15 @@ function setMarker(lon, lat, msg){
   //map.events.register("click", feature, markerClick);
 }
 
-//define variable for framed cloud
-//disable the autosize for the purpose of our matrix
-OpenLayers.Popup.FramedCloud.prototype.autoSize = false;
-AutoSizeFramedCloud = OpenLayers.Class(OpenLayers.Popup.FramedCloud, {
-  'autoSize': true
-});
-
-AutoSizeFramedCloudMinSize = OpenLayers.Class(OpenLayers.Popup.FramedCloud, {
-  'autoSize': true, 
-  'minSize': new OpenLayers.Size(400,400)
-});
-
-AutoSizeFramedCloudMaxSize = OpenLayers.Class(OpenLayers.Popup.FramedCloud, {
-  'autoSize': true, 
-  'maxSize': new OpenLayers.Size(100,100)
-});
-
 function addMarkers() {
 
   var ll, popupClass, popupContentHTML;
-
-  //
-  //FRAMED NO OVERFLOW
-  //
-
   //anchored bubble popup wide short text contents autosize closebox
   ll = new OpenLayers.LonLat(13, 100);
   popupClass = AutoSizeFramedCloud;
   popupContentHTML = '<div style="background-color:red;">Popup.FramedCloud<br>autosize - wide short text<br>closebox<br>' + samplePopupContentsHTML_WideShort + '</div>' 
   addMarker(ll, popupClass, popupContentHTML, true);
 }
-
-/**
- * Function: addMarker
- * Add a new marker to the markers layer given the following lonlat, 
- *     popupClass, and popup contents HTML. Also allow specifying 
- *     whether or not to give the popup a close box.
- * 
- * Parameters:
- * ll - {<OpenLayers.LonLat>} Where to place the marker
- * popupClass - {<OpenLayers.Class>} Which class of popup to bring up 
- *     when the marker is clicked.
- * popupContentHTML - {String} What to put in the popup
- * closeBox - {Boolean} Should popup have a close box?
- * overflow - {Boolean} Let the popup overflow scrollbars?
- */
 
 function addMarker(ll, popupClass, popupContentHTML, closeBox, overflow) {
   var feature = new OpenLayers.Feature(markers, ll); 
@@ -258,11 +682,11 @@ function addMarker(ll, popupClass, popupContentHTML, closeBox, overflow) {
   feature.data.popupContentHTML = popupContentHTML;
   feature.data.overflow = (overflow) ? "auto" : "hidden";
             
-  var marker = feature.createMarker();
+  marker = feature.createMarker();
 
   var markerClick = function (evt) {
     if (this.popup == null) {
-      this.popup = this.createPopup(this.closeBox);
+      this.popup = this.create_popup_marker(this.closeBox);
       map.addPopup(this.popup);
       this.popup.show();
     } else {
@@ -276,10 +700,9 @@ function addMarker(ll, popupClass, popupContentHTML, closeBox, overflow) {
   markers.addMarker(marker);
 }        
 
-// Add popup when hover feature 08/06/2012
 function onFeatureSelect(feature) {
   selectedFeature = feature;
-  popup = new OpenLayers.Popup.FramedCloud(
+  popup_marker = new OpenLayers.Popup.FramedCloud(
     ""
     ,feature.geometry.getBounds().getCenterLonLat()
     ,new OpenLayers.Size(100,100)
@@ -290,14 +713,13 @@ function onFeatureSelect(feature) {
     "</table></div>"
     ,null
     ,true
-    ,onPopupClose
+    ,onMarkerPopupClose
   );
-  feature.popup = popup;
-  map.addPopup(popup);
+  feature.popup = popup_marker;
+  map.addPopup(popup_marker);
 }
 
-function onPopupClose(evt) {
-  //frm_input_ctrl.unselect(selectedFeature);
+function onMarkerPopupClose(evt) {
   frm_input_ctrl.unselectAll();
 }
 
@@ -329,7 +751,7 @@ var check_gps = function(){
 
 var report = function(lodd,lomm,loss,ladd,lamm,lass) {  
   Ext.Ajax.request({
-    url: '/dsix/rb/checkLonLat2.rb'
+    url: 'rb/checkLonLat2.rb'
     ,params: {
       method: 'GET'
       ,lodd: lodd
@@ -360,116 +782,117 @@ var report = function(lodd,lomm,loss,ladd,lamm,lass) {
       var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
       var icon = new OpenLayers.Icon('img/icon_marker.png', size, offset);
       markers.addMarker(new OpenLayers.Marker(p2,icon));
-      Ext.Msg.alert('Result',data.msg);
+      info('Result',data.msg);
     }
   });
 };
 
 var gps = Ext.create("Ext.form.Panel",{
-  title: 'ตำแหน่งพิกัด GPS',
-  id: 'id_gps',
-  frame: true,
-  items: [{
-    xtype: 'fieldcontainer',
-    layout: {
-      type: 'hbox',
-      padding:'5',
-      pack:'center'
-    },
-    fieldDefaults: {
-      labelSeparator: '',
-      labelAlign: 'top',
-      margin: '0 5 0 0'
-    },
-    items: [{
-      xtype:'textfield',
-      id: 'londd',
-      fieldLabel: 'Lon:DD',
-      width:50
+  title: 'ตำแหน่งพิกัด GPS'
+  ,id: 'id_gps'
+  ,frame: true
+  ,items: [{
+    xtype: 'fieldcontainer'
+    ,layout: {
+      type: 'hbox'
+      ,padding:'5'
+      ,pack:'center'
+    }
+    ,fieldDefaults: {
+      labelSeparator: ''
+      ,labelAlign: 'top'
+      ,margin: '0 5 0 0'
+    }
+    ,items: [{
+      xtype:'textfield'
+      ,id: 'londd'
+      ,fieldLabel: 'Lon:DD'
+      ,width:50
     },{
-      xtype:'textfield',
-      id: 'lonmm',
-      fieldLabel: 'Lon:MM',
-      width:50
+      xtype:'textfield'
+      ,id: 'lonmm'
+      ,fieldLabel: 'Lon:MM'
+      ,width:50
     },{
-      xtype:'textfield',
-      id: 'lonss',
-      fieldLabel: 'Lon:SS',
-      width:50
+      xtype:'textfield'
+      ,id: 'lonss'
+      ,fieldLabel: 'Lon:SS'
+      ,width:50
     },{
-      xtype: 'displayfield',
-      fieldLabel: '&nbsp;',
-      value: 'E'
+      xtype: 'displayfield'
+      ,fieldLabel: '&nbsp;'
+      ,value: 'E'
     }]
   },{
-    xtype: 'fieldcontainer',
-    layout: {
-      type: 'hbox',
-      padding:'5',
-      pack:'center'
-    },
-    fieldDefaults: {
-      labelSeparator: '',
-      labelAlign: 'top',
-      margin: '0 5 0 0'
-    },
-    items: [{
-      xtype:'textfield',
-      id: 'latdd',
-      fieldLabel: 'Lat:DD',
-      width:50
+    xtype: 'fieldcontainer'
+    ,layout: {
+      type: 'hbox'
+      ,padding:'5'
+      ,pack:'center'
+    }
+    ,fieldDefaults: {
+      labelSeparator: ''
+      ,labelAlign: 'top'
+      ,margin: '0 5 0 0'
+    }
+    ,items: [{
+      xtype:'textfield'
+      ,id: 'latdd'
+      ,fieldLabel: 'Lat:DD'
+      ,width:50
     },{
-      xtype:'textfield',
-      id: 'latmm',
-      fieldLabel: 'Lat:MM',
-      width:50
+      xtype:'textfield'
+      ,id: 'latmm'
+      ,fieldLabel: 'Lat:MM'
+      ,width:50
     },{
-      xtype:'textfield',
-      id: 'latss',
-      fieldLabel: 'Lat:SS',
-      width:50
+      xtype:'textfield'
+      ,id: 'latss'
+      ,fieldLabel: 'Lat:SS'
+      ,width:50
     },{
-      xtype: 'displayfield',
-      fieldLabel: '&nbsp;',
-      value: 'N'
+      xtype: 'displayfield'
+      ,fieldLabel: '&nbsp;'
+      ,value: 'N'
     }]
   },{
-    xtype: 'fieldcontainer',
-    layout: {
-      type: 'hbox',
-      padding:'5',
-      pack:'center'
-    },
-    fieldDefaults: {
-      labelSeparator: '',
-      labelAlign: 'top',
-      margin: '0 5 0 0'
-    },
-    items: [{
-      xtype: "button",
-      text: 'Check',
-      handler: check_gps,
-      width: 80
+    xtype: 'fieldcontainer'
+    ,layout: {
+      type: 'hbox'
+      ,padding:'5'
+      ,pack:'center'
+    }
+    ,fieldDefaults: {
+      labelSeparator: ''
+      ,labelAlign: 'top'
+      ,margin: '0 5 0 0'
+    }
+    ,items: [{
+      xtype: 'button'
+      ,text: 'Check'
+      ,handler: check_gps
+      ,width: 80
     },{
-      xtype: "button",
-      text: 'Clear',
-      handler: function(){
+      xtype: 'button'
+      ,text: 'Clear'
+      ,handler: function(){
         gps.getForm().reset();
         markers.clearMarkers();
-      },
-      width: 80
+      }
+      ,width: 80
     },{
-      xtype: "button",
-      text: 'Test',
-      handler: test_gps,
-      width: 80
+      xtype: 'button'
+      ,text: 'Test'
+      ,handler: test_gps
+      ,width: 80
     }]
   }]    
 });
 
-//////////////////////////////
-///UTM
-//////////////////////////////
+//////////////////////////////////////////////
+// UTM
+//////////////////////////////////////////////
+
 var check_gps_utm = function(){
   var utmn = Ext.getCmp('utmn').getValue();
   var utme = Ext.getCmp('utme').getValue();
@@ -478,13 +901,12 @@ var check_gps_utm = function(){
     zone = '47';
   else
     zone = '48';
-
   report_utm(utmn, utme, zone);
 }
 
 var report_utm = function(utmn, utme, zone) {
   Ext.Ajax.request({
-    url: '/dsix/rb/checkUTM.rb'
+    url: 'rb/checkUTM.rb'
     ,params: {
       method: 'GET'
       ,utmn: utmn
@@ -497,8 +919,6 @@ var report_utm = function(utmn, utme, zone) {
       return false;            
     }
     ,success: function(response, opts){
-      //var data = eval( '(' + response.responseText + ')' );
-
       var data = Ext.decode(response.responseText);
       var lon = parseFloat(data.lon);
       var lat = parseFloat(data.lat);
@@ -512,7 +932,7 @@ var report_utm = function(utmn, utme, zone) {
       var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
       var icon = new OpenLayers.Icon('img/icon_marker.png', size, offset);
       markers.addMarker(new OpenLayers.Marker(p2,icon));
-      Ext.Msg.alert('Result', data.msg);
+      info('Result', data.msg);
     }
   });
 };
@@ -527,112 +947,112 @@ var test_gps_utm = function(){
   }
 }
 
-var gps_utm = Ext.create("Ext.form.Panel",{
-  id: 'id_gps_utm',
-  frame: true,
-  title: 'ตำแหน่งพิกัด GPS (UTM)',
-  items: [{
-    xtype: 'fieldcontainer',
-    hideLabel: true,
-    layout: {
-        type: 'hbox',
-        padding:'5',
-        pack:'center'
-    },
-    fieldDefaults: {
-        labelAlign: 'top',
-        margin: '0 5 0 0',
-        labelWidth: 90,
-        labelSeparator: ''
-    },
-    items: [{
-      xtype:'textfield',
-      fieldLabel: 'Easting:Meters',
-      id: 'utme'
+var gps_utm = Ext.create("Ext.form.Panel", {
+  id: 'id_gps_utm'
+  ,frame: true
+  ,title: 'ตำแหน่งพิกัด GPS (UTM)'
+  ,items: [{
+    xtype: 'fieldcontainer'
+    ,hideLabel: true
+    ,layout: {
+      type: 'hbox'
+      ,padding:'5'
+      ,pack:'center'
+    }
+    ,fieldDefaults: {
+      labelAlign: 'top'
+      ,margin: '0 5 0 0'
+      ,labelWidth: 90
+      ,labelSeparator: ''
+    }
+    ,items: [{
+      xtype:'textfield'
+      ,fieldLabel: 'Easting:Meters'
+      ,id: 'utme'
     },{
-      xtype: 'displayfield',
-      fieldLabel: '&nbsp;',
-      value: 'E'
+      xtype: 'displayfield'
+      ,fieldLabel: '&nbsp;'
+      ,value: 'E'
     }]
   },{
-    xtype: 'fieldcontainer',
-    hideLabel: true,
-    layout: {
-      type: 'hbox',
-      padding:'5',
-      pack:'center'
-    },
-    fieldDefaults: {
-      labelAlign: 'top',
-      margin: '0 5 0 0',
-      labelWidth: 90,
+    xtype: 'fieldcontainer'
+    ,hideLabel: true
+    ,layout: {
+      type: 'hbox'
+      ,padding:'5'
+      ,pack:'center'
+    }
+    ,fieldDefaults: {
+      labelAlign: 'top'
+      ,margin: '0 5 0 0'
+      ,labelWidth: 90
+      ,labelSeparator: ''
+    }
+    ,items: [{
+      xtype:'textfield'
+      ,fieldLabel: 'Northing:Meters'
+      ,id: 'utmn'
+    },{
+      xtype: 'displayfield'
+      ,fieldLabel: '&nbsp;'
+      ,value: 'N'
+    }]
+  },{
+    xtype: 'fieldcontainer'
+    ,hideLabel: true
+    ,layout: {
+      type: 'hbox'
+      ,padding:'5'
+      ,pack:'center'
+    }
+    ,fieldDefaults: {
+      labelAlign: 'top'
+      ,margin: '0 40 0 0'
+      ,labelWidth: 90
+      ,labelSeparator: ''
+    }
+    ,items: [{
+      xtype: 'radio'
+      ,id: 'zone47'
+      ,name: 'zone'
+      ,fieldLabel: 'Zone 47'
+      ,checked: true
+    },{
+      xtype: 'radio'
+      ,id: 'zone48'
+      ,name: 'zone'
+      ,fieldLabel: 'Zone 48'
+    }]
+  },{
+    xtype: 'fieldcontainer'
+    ,layout: {
+      type: 'hbox'
+      ,padding:'5'
+      ,pack:'center'
+    }
+    ,fieldDefaults: {
       labelSeparator: ''
-    },
-    items: [{
-      xtype:'textfield',
-      fieldLabel: 'Northing:Meters',
-      id: 'utmn'
+      ,labelAlign: 'top'
+      ,margin: '0 5 0 0'
+    }
+    ,items: [{
+      xtype: 'button'
+      ,text: 'Check'
+      ,handler: check_gps_utm
+      ,width: 80
     },{
-      xtype: 'displayfield',
-      fieldLabel: '&nbsp;',
-      value: 'N'
-    }]
-  },{
-    xtype: 'fieldcontainer',
-    hideLabel: true,
-    layout: {
-      type: 'hbox',
-      padding:'5',
-      pack:'center'
-    },
-    fieldDefaults: {
-      labelAlign: 'top',
-      margin: '0 40 0 0',
-      labelWidth: 90,
-      labelSeparator: ''
-    },
-    items: [{
-      xtype: 'radio',
-      id: 'zone47',
-      name: 'zone',
-      fieldLabel: 'Zone 47',
-      checked: true
-    },{
-      xtype: 'radio',
-      id: 'zone48',
-      name: 'zone',
-      fieldLabel: 'Zone 48'
-    }]
-  },{
-    xtype: 'fieldcontainer',
-    layout: {
-      type: 'hbox',
-      padding:'5',
-      pack:'center'
-    },
-    fieldDefaults: {
-      labelSeparator: '',
-      labelAlign: 'top',
-      margin: '0 5 0 0'
-    },
-    items: [{
-      xtype: "button",
-      text: 'Check',
-      handler: check_gps_utm,
-      width: 80
-    },{
-      xtype: "button",
-      text: 'Clear',
-      handler: function(){
+      xtype: 'button'
+      ,text: 'Clear'
+      ,handler: function(){
         gps_utm.getForm().reset();
         markers.clearMarkers();
-      },
-      width: 80
+      }
+      ,width: 80
     },{
-      xtype: "button",
-      text: 'Test',
-      handler: test_gps_utm,
-      width: 80
+      xtype: 'button'
+      ,text: 'Test'
+      ,handler: test_gps_utm
+      ,width: 80
     }]
   }]
 });
@@ -645,14 +1065,12 @@ var check_gps_utm = function(){
     zone = '47';
   else
     zone = '48';
-
   report_utm(utmn, utme, zone);
 }
 
 var report_utm = function(utmn, utme, zone) {
-  
   Ext.Ajax.request({
-    url: '/dsix/rb/checkUTM.rb'
+    url: 'rb/checkUTM.rb'
     ,params: {
       method: 'GET'
       ,utmn: utmn
@@ -661,12 +1079,10 @@ var report_utm = function(utmn, utme, zone) {
       ,format: 'json'
     }
     ,failure: function(response, opts){
-      alert("checkUTM > failure");
+      alert('checkUTM > failure');
       return false;            
     }
     ,success: function(response, opts){
-      // var data = eval( '(' + response.responseText + ')' );
-
       var data = Ext.decode(response.responseText);
       var lon = parseFloat(data.lon);
       var lat = parseFloat(data.lat);
@@ -680,14 +1096,15 @@ var report_utm = function(utmn, utme, zone) {
       var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
       var icon = new OpenLayers.Icon('img/icon_marker.png', size, offset);
       markers.addMarker(new OpenLayers.Marker(p2,icon));
-      Ext.Msg.alert('Result', data.msg);
+      info('Result', data.msg);
     }
   });
 };
 
-///////////////////////////////////////
+//////////////////////////////////////////////
 // UTM INDIAN
-//////////////////////////////////////
+//////////////////////////////////////////////
+
 var check_gps_utm_indian = function(){
   var utmni = Ext.getCmp('utmni').getValue();
   var utmei = Ext.getCmp('utmei').getValue();
@@ -696,14 +1113,12 @@ var check_gps_utm_indian = function(){
     zonei = '47';
   else
     zonei = '48';
-
   report_utm_indian(utmni, utmei, zonei);
 }
 
 var report_utm_indian = function(utmni, utmei, zonei) {
-  
   Ext.Ajax.request({
-    url: '/dsix/rb/checkUTMIndian.rb'
+    url: 'rb/checkUTMIndian.rb'
     ,params: {
       method: 'GET'
       ,utmn: utmni
@@ -712,12 +1127,10 @@ var report_utm_indian = function(utmni, utmei, zonei) {
       ,format: 'json'
     }
     ,failure: function(response, opts){
-      alert("checkUTMIndian > failure");
+      alert('checkUTMIndian > failure');
       return false;
     }
     ,success: function(response, opts){
-      // var data = eval( '(' + response.responseText + ')' );
-
       var data = Ext.decode(response.responseText);
       var lon = parseFloat(data.lon);
       var lat = parseFloat(data.lat);
@@ -731,7 +1144,7 @@ var report_utm_indian = function(utmni, utmei, zonei) {
       var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
       var icon = new OpenLayers.Icon('img/icon_marker.png', size, offset);
       markers.addMarker(new OpenLayers.Marker(p2,icon));
-      Ext.Msg.alert('Result', data.msg);
+      info('Result', data.msg);
     }
   });
 };
@@ -747,137 +1160,134 @@ var test_gps_utm_indian = function(){
 }
 
 var gps_utm_indian = Ext.create("Ext.form.Panel",{
-  id: 'id_gps_utm_indian',
-  frame: true,
-  title: 'ตำแหน่งพิกัด GPS (UTM Indian 1975)',
-  bodyStyle: 'padding:5px 5px 5px',
-  items: [{
-    xtype: 'fieldcontainer',
-    hideLabel: true,
-    layout: {
-      type: 'hbox',
-      padding:'5',
-      pack:'center'
-    },
-    fieldDefaults: {
-      labelAlign: 'top',
-      margin: '0 5 0 0',
-      labelWidth: 90,
-      labelSeparator: ''
-    },
-    items: [{
-      xtype:'textfield',
-      fieldLabel: 'Easting:Meters',
-      id: 'utmei'
+  id: 'id_gps_utm_indian'
+  ,frame: true
+  ,title: 'ตำแหน่งพิกัด GPS (UTM Indian 1975)'
+  ,bodyStyle: 'padding:5px 5px 5px'
+  ,items: [{
+    xtype: 'fieldcontainer'
+    ,hideLabel: true
+    ,layout: {
+      type: 'hbox'
+      ,padding:'5'
+      ,pack:'center'
+    }
+    ,fieldDefaults: {
+      labelAlign: 'top'
+      ,margin: '0 5 0 0'
+      ,labelWidth: 90
+      ,labelSeparator: ''
+    }
+    ,items: [{
+      xtype:'textfield'
+      ,fieldLabel: 'Easting:Meters'
+      ,id: 'utmei'
     },{
-      xtype: 'displayfield',
-      fieldLabel: '&nbsp;',
-      value: 'E'
+      xtype: 'displayfield'
+      ,fieldLabel: '&nbsp;'
+      ,value: 'E'
     }]
   },{
-    xtype: 'fieldcontainer',
-    hideLabel: true,
-    layout: {
-      type: 'hbox',
-      padding:'5',
-      pack:'center'
-    },
-    fieldDefaults: {
-      labelAlign: 'top',
-      margin: '0 5 0 0',
-      labelWidth: 90,
-      labelSeparator: ''
-    },
-    items: [{
-      xtype:'textfield',
-      fieldLabel: 'Easting:Meters',
-      id: 'utmni'
+    xtype: 'fieldcontainer'
+    ,hideLabel: true
+    ,layout: {
+      type: 'hbox'
+      ,padding:'5'
+      ,pack:'center'
+    }
+    ,fieldDefaults: {
+      labelAlign: 'top'
+      ,margin: '0 5 0 0'
+      ,labelWidth: 90
+      ,labelSeparator: ''
+    }
+    ,items: [{
+      xtype:'textfield'
+      ,fieldLabel: 'Easting:Meters'
+      ,id: 'utmni'
     },{
-      xtype: 'displayfield',
-      fieldLabel: '&nbsp;',
-      value: 'N'
+      xtype: 'displayfield'
+      ,fieldLabel: '&nbsp;'
+      ,value: 'N'
     }]
   },{
-    xtype: 'fieldcontainer',
-    hideLabel: true,
-    layout: {
-      type: 'hbox',
-      padding:'5',
-      pack:'center'
-    },
-    fieldDefaults: {
-      labelAlign: 'top',
-      margin: '0 40 0 0',
-      labelWidth: 90,
-      labelSeparator: ''
-    },
-    items: [{
-      xtype: 'radio',
-      id: 'zone47i',
-      name: 'zonei',
-      fieldLabel: 'Zone 47',
-      checked: true,
+    xtype: 'fieldcontainer'
+    ,hideLabel: true
+    ,layout: {
+      type: 'hbox'
+      ,padding:'5'
+      ,pack:'center'
+    }
+    ,fieldDefaults: {
+      labelAlign: 'top'
+      ,margin: '0 40 0 0'
+      ,labelWidth: 90
+      ,labelSeparator: ''
+    }
+    ,items: [{
+      xtype: 'radio'
+      ,id: 'zone47i'
+      ,name: 'zonei'
+      ,fieldLabel: 'Zone 47'
+      ,checked: true
     },{
-      xtype: 'radio',
-      id: 'zone48i',
-      name: 'zonei',
-      fieldLabel: 'Zone 48',
+      xtype: 'radio'
+      ,id: 'zone48i'
+      ,name: 'zonei'
+      ,fieldLabel: 'Zone 48'
     }]
   },{
-    xtype: 'fieldcontainer',
-    layout: {
-      type: 'hbox',
-      padding:'5',
-      pack:'center'
-    },
-    fieldDefaults: {
-      labelSeparator: '',
-      labelAlign: 'top',
-      margin: '0 5 0 0'
-    },
-    items: [{
-      xtype: "button",
-      text: 'Check',
-      handler: check_gps_utm_indian,
-      width: 80
+    xtype: 'fieldcontainer'
+    ,layout: {
+      type: 'hbox'
+      ,padding:'5'
+      ,pack:'center'
+    }
+    ,fieldDefaults: {
+      labelSeparator: ''
+      ,labelAlign: 'top'
+      ,margin: '0 5 0 0'
+    }
+    ,items: [{
+      xtype: "button"
+      ,text: 'Check'
+      ,handler: check_gps_utm_indian
+      ,width: 80
     },{
-      xtype: "button",
-      text: 'Clear',
-      handler: function(){
+      xtype: "button"
+      ,text: 'Clear'
+      ,handler: function(){
         gps_utm_indian.getForm().reset();
         markers.clearMarkers();
-      },
-      width: 80
+      }
+      ,width: 80
     },{
-      xtype: "button",
-      text: 'Test',
-      handler: test_gps_utm_indian,
-      width: 80
+      xtype: "button"
+      ,text: 'Test'
+      ,handler: test_gps_utm_indian
+      ,width: 80
     }]
   }]
 });
 
-/////////////////////////////////
+//////////////////////////////////////////////
 // SEARCH
-///////////////////////////////
+//////////////////////////////////////////////
+
 var search_query = function(){
   var query = Ext.getCmp('id_query').getValue();        
   search(query);
 }
 
 var search = function(query) {
-  //debugger;
   Ext.Ajax.request({
-    url: '/dsix/rb/search-googlex.rb'
+    url: 'rb/search-googlex.rb'
     ,params: {
       method: 'GET'
       ,query: query
       ,exact: 1
     }
     ,success: function(response, opts){
-      // var data = eval( '(' + response.responseText + ')' );
-      // No response from IE
-
       var data = Ext.decode(response.responseText);
       var gid = data.records[0].loc_gid;
       var text = data.records[0].loc_text;
@@ -911,16 +1321,8 @@ var search = function(query) {
           setMarker(lon, lat, text);
         }
       }
-
       map.setCenter(p2, zoom);
-
-      //var size = new OpenLayers.Size(21,25);
-      //var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
-      //var icon = new OpenLayers.Icon('http://www.google.com/mapfiles/marker.png', size, offset);
-      //markers.clearMarkers();
-      //markers.addMarker(new OpenLayers.Marker(p2,icon));
-
-      Ext.Msg.alert('Result',text + '<br>lat:' + lat + ' lon:' + lon);
+      info('Result',text + '<br>lat:' + lat + ' lon:' + lon);
       if (text.search(/จ./) == 0 || text.search(/อ./) == 0 || text.search(/ต./) == 0 || text.search(/บ้าน/) == 0)
       {
         hili.setOpacity(.5);
@@ -955,7 +1357,7 @@ function addWKTFeatures(wktString){
       }
     }
   }
-  vectorLayer.removeFeatures;
+  vectorLayer.removeAllFeatures();
   vectorLayer.addFeatures(features[0].geometry.transform(gcs, merc));
   map.zoomToExtent(bounds);
 }
@@ -968,14 +1370,14 @@ var myTextField = Ext.create("GeoExt.ux.QryComboBox",{
   ,fieldStore: ['loc_table','loc_gid','loc_text']
   ,hiddenField: ['loc_table','loc_gid']
   ,displayField: 'loc_text'
-  ,urlStore: '/dsix/rb/search-googlex.rb'
+  ,urlStore: 'rb/search-googlex.rb'
   ,width: '110'
   ,minListWidth: '300'
   ,anchor: '95%'
 });
 
 myTextField.on({
-    select: {fn: function(){Ext.getCmp("btn_search").enable();}, scope: this}
+  'select': {fn: function(){Ext.getCmp("btn_search").enable();}, scope: this}
 });
 
 myTextField.on("specialkey", specialKey, this);
@@ -987,14 +1389,14 @@ function specialKey(field, e) {
 }
 
 var searchquery = Ext.create("Ext.form.Panel",{
-  id: 'id_searchquery',
-  labelAlign: 'left',
-  align: 'center',
-  frame: true,
-  title: 'ค้นหาสถานที่',
-  bodyStyle: 'padding:5px 5px 5px',
-  width: 300,
-  items: [{
+  id: 'id_searchquery'
+  ,labelAlign: 'left'
+  ,align: 'center'
+  ,frame: true
+  ,title: 'ค้นหาสถานที่'
+  ,bodyStyle: 'padding:5px 5px 5px'
+  ,width: 300
+  ,items: [{
     layout: 'form'
     ,labelWidth: 30
     ,items: [ myTextField ]
@@ -1042,7 +1444,7 @@ var check_forest_info = function(layer,ll) {
       layer = 'mangrove_2552';
 
   Ext.Ajax.request({
-    url: '/dsix/rb/check_forest_info.rb'
+    url: 'rb/check_forest_info.rb'
     ,params: {
       method: 'GET'
       ,layer: layer
@@ -1050,295 +1452,21 @@ var check_forest_info = function(layer,ll) {
       ,lat: lat
       ,format: 'json'
     }
-    ,failure: function(response, opts){
-      alert("check forest info > failure");
-      return false;
-    }
     ,success: function(response, opts){
-      var data = eval( '(' + response.responseText + ')' );
+      var data = Ext.decode(response.responseText);
       var lon = data.lon;
       var lat = data.lat;
       var msg = data.msg;
   
       var p1 = new OpenLayers.LonLat(lon,lat);
       var p2 = p1.transform(gcs,merc);
-      //map.setCenter(p2, 14);
-  
-      //var size = new OpenLayers.Size(21,25);
-      //var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
-      //var icon = new OpenLayers.Icon('http://www.google.com/mapfiles/marker.png', size, offset);
-      //markers.addMarker(new OpenLayers.Marker(p2,icon));
+
       if (msg != 'NA')
-        Ext.Msg.alert('Result', msg);
+        info('Result', msg);
     }
+    ,failure: function(response, opts){
+      alert('check forest info > failure');
+      return false;
+    }    
   });
 };
-
-// Add Popup: create select feature control 05/08/2012
-frm_input_ctrl = new OpenLayers.Control.SelectFeature(vectorLayer);
-
-// Add Popup: define "createPopup" function + Input Form 05/08/2012
-var frm_input = Ext.create('Ext.form.Panel', {
-  title: 'Inner Tabs'
-  ,id: 'id_frm_input'
-  ,url: 'rb/process_input.rb'
-  ,bodyStyle:'padding:5px'
-  ,width: 600
-  ,fieldDefaults: {
-    labelAlign: 'top'
-    ,msgTarget: 'side'
-  }
-  ,defaults: {
-    anchor: '100%'
-  }
-  ,items: [{
-    layout:'column'
-    ,border:false
-    ,items:[{
-      columnWidth:.5
-      ,border:false
-      ,layout: 'anchor'
-      ,defaultType: 'textfield'
-      ,items: [{
-        fieldLabel: 'First Name'
-        ,name: 'first'
-        ,anchor:'95%'
-      },{
-        fieldLabel: 'Company'
-        ,name: 'company'
-        ,anchor:'95%'
-      }]
-    },{
-      columnWidth:.5
-      ,border:false
-      ,layout: 'anchor'
-      ,defaultType: 'textfield'
-      ,items: [{
-        fieldLabel: 'Last Name'
-        ,name: 'last'
-        ,anchor:'95%'
-      },{
-        fieldLabel: 'Email'
-        ,name: 'email'
-        ,vtype:'email'
-        ,anchor:'95%'
-      }]
-    }]
-  },{
-    xtype:'tabpanel'
-    ,plain:true
-    ,activeTab: 0
-    ,height:235
-    ,defaults:{bodyStyle:'padding:10px'}
-    ,items:[{
-      title:'Demo Input'
-      ,defaults: {width: 200}
-      ,items: [{
-        xtype: 'textfield'
-        ,fieldLabel: 'Title'
-        ,name: 'name'
-        ,allowBlank:false
-
-        //CHECK!!!
-        ,enableKeyEvents: true
-        ,listeners: {
-          keyup: function(){
-            Ext.getCmp('id_upload_title').setValue(this.value);
-          }
-        }
-    },{
-        xtype : 'combo'
-        ,fieldLabel : 'Select Layer'
-        ,id: 'id_icon'
-        
-        ,listConfig: {
-          getInnerTpl: function() {
-            // here you place the images in your combo
-            var tpl = '<div>'+
-                      '<img src="img/{icon}.png" align="left">&nbsp;&nbsp;'+
-                      '{text}</div>';
-            return tpl;
-          }
-        }
-        ,store : new Ext.data.SimpleStore({
-          data : [['icon1', 'Layer 1'],['icon2','Layer 2']]
-          ,id : 0
-          ,fields : ['icon','text']
-        })
-        ,valueField : 'icon'
-        ,displayField : 'text'
-        ,triggerAction : 'all'
-        ,editable : false
-        ,name : 'icon'
-      },{
-        xtype: 'textfield'
-        ,fieldLabel: 'Description'
-        ,name: 'description'
-        ,allowBlank:false
-      },{
-        xtype: 'textareafield'
-        ,fieldLabel: 'Location'
-        ,name: 'location'
-        ,id: 'id_location'
-        ,width: '100%'
-        ,anchor: '100%'
-      }]
-    },{
-      
-      xtype: 'form'
-      ,title:'Upload Photo'
-      ,width: 500
-      ,frame: true
-      ,title: 'File Upload Form'
-      ,bodyPadding: '10 10 0'
-
-      ,defaults: {
-        anchor: '100%'
-        ,xtype: 'textfield'
-        ,msgTarget: 'side'
-        ,labelWidth: 50
-      }
-
-      ,items: [{
-        fieldLabel: 'Title'
-        ,id: 'id_upload_title'
-        ,name: 'upload_title'
-        ,disabled: true
-      },{
-        xtype: 'filefield'
-        ,name: 'file'
-        ,id: 'id_file'
-        ,fieldLabel: 'Photo'
-        ,labelWidth: 50
-        ,msgTarget: 'side'
-        ,allowBlank: true
-        ,buttonText: ''
-        ,buttonConfig: {
-          iconCls: 'upload'
-        }
-      },{
-        fieldLabel: 'File saved'
-        ,name: 'origname'
-        ,id: 'id_origname'
-      },{
-        xtype: 'hidden'
-        ,name: 'imgname'
-        ,id: 'id_imgname'
-      }]
-      ,buttons: [{
-        text: 'Upload'
-        ,handler: function() {
-          var form = this.up('form').getForm();
-          if (form.isValid()) {
-            form.submit({
-              url: 'rb/file-upload.rb'
-              ,waitMsg: 'Uploading photo...'
-              ,success: function(fp, o) {
-                var j = Ext.JSON.decode(o.response.responseText);
-                var imgname = j.imgname;
-                var origname = j.origname;
-                Ext.getCmp('id_imgname').setValue(imgname);
-                Ext.getCmp('id_origname').setValue(origname);
-                info('Success', 'File ' + origname + ' has been uploaded!');
-              }
-            })
-          }
-        }
-      },{
-        text: 'Reset',
-        handler: function() {
-          this.up('form').getForm().reset();
-        }
-      }]
-    },{
-      cls: 'x-plain'
-      ,title: 'WYSIWYG'
-      ,layout: 'fit'
-      ,items: {
-        xtype: 'htmleditor'
-        ,name: 'wysisyg'
-        ,fieldLabel: 'WYSIWYG'
-      }
-    }]
-  }],
-  buttons: [{
-    text: 'Save'
-    ,handler: function() {
-      frm_input.getForm().submit({
-        success: function(f,a) {
-          Ext.Msg.show({
-            title: 'Info'
-            ,msg: '1 feature added!'
-            ,buttons: Ext.Msg.OK
-            ,icon: Ext.Msg.INFO
-            ,fn: function(btn) {
-              // Reset input form
-              // Hide popup
-              // Remove all features
-              // Refresh pointLayer
-              vectorLayer.removeAllFeatures();
-              frm_input.getForm().reset();
-              popup.hide();
-              // Update new feature in pointLayer
-              if (pointLayer) {
-                map.removeLayer(pointLayer);
-                pointLayer = null
-              }
-              addPointLayer();
-              map.addLayer(pointLayer);
-              frm_input_ctrl.deactivate();
-            }
-          });        
-        }
-        ,failure: function(f,a) {
-          Ext.Msg.alert('Error', 'Failed!!');
-        }
-      })
-    }
-  },{
-    text: 'Cancel'
-    ,handler: function() {
-      var o = Ext.getCmp('id_location');
-      // Remember current location
-      var curr_loc = o.getValue();
-      frm_input.getForm().reset();
-      // Set current location back to form
-      o.setValue(curr_loc);
-    }
-  }]
-});
-
-function createPopup(feature) {
-  // convert from merc(900913) to gcs(4326)
-  var feat = feature.clone();
-  feat.geometry.transform(merc, gcs);
-  
-  var curr_loc = feat.geometry.toString();
-  Ext.getCmp('id_location').setValue(curr_loc);
-  
-  if (!popup) {
-    popup = Ext.create('GeoExt.window.Popup', {
-      title: 'DSI Popup',
-      id: 'id_popup',
-      location: feature,
-      width:604,
-      items: [ frm_input ],
-      maximizable: true,
-      collapsible: true,
-      closeAction: 'hide',
-      anchorPosition: 'auto'
-    });
-    // unselect feature when the popup
-    // is closed
-    popup.on({
-      close: function() {
-        if(OpenLayers.Util.indexOf(vectorLayer.selectedFeatures,
-          this.feature) > -1) {
-          frm_input_ctrl.unselect(this.feature);
-        }
-      }
-    });
-  }
-  //popup.center();
-  popup.show();
-}
