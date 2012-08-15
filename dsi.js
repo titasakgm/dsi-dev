@@ -499,19 +499,24 @@ Ext.require([
       type: "Road",
       iconCls: 'bing'
     });
+    bing_road.isBaseLayer = true;
+
     bing_hybrid = new OpenLayers.Layer.Bing({
       name: "Bing Hybrid",
       key: apiKey,
       type: "AerialWithLabels",
       iconCls: 'bing'
     });
+    bing_hybrid.isBaseLayer = true;
+
     bing_aerial = new OpenLayers.Layer.Bing({
       name: "Bing Aerial",
       key: apiKey,
       type: "Aerial",
       iconCls: 'bing'
     });
-    
+    bing_aerial.isBaseLayer = true;
+
     mapPanel = Ext.create('GeoExt.panel.Map', {
       border: true,
       region: "center",
