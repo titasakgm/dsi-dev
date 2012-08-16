@@ -1,4 +1,5 @@
-#!/usr/bin/ruby
+#!/usr/local/rvm/bin/ruby
+# -*- encoding : utf-8 -*-
 
 require 'cgi'
 require 'rubygems'

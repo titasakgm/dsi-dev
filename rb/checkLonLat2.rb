@@ -1,8 +1,8 @@
-#!/usr/bin/ruby
-# encoding: utf-8
+#!/usr/local/rvm/bin/ruby
+# -*- encoding : utf-8 -*-
 
 require 'cgi'
-require 'rubygems'
+#require 'rubygems'
 require 'pg'
 
 def dms2dd(dd,mm,ss)

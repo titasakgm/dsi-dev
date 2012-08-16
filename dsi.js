@@ -29,7 +29,11 @@ Ext.require([
   
   // Add kml store
   'GeoExt.data.FeatureStore',
-  'GeoExt.data.proxy.Protocol' ]); Ext.application({
+  'GeoExt.data.proxy.Protocol'
+
+]);
+
+Ext.application({
   name: 'Tree',
   launch: function() {
     // DSI location

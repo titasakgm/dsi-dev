@@ -1,5 +1,5 @@
-#!/usr/bin/ruby
-# encoding: utf-8
+#!/usr/local/rvm/bin/ruby
+# -*- encoding : utf-8 -*-
 
 require 'cgi'
 

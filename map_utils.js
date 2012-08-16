@@ -477,8 +477,8 @@ create_layer_pointLayer = function() {
  
   // Add popup when feature in pointLayer is clicked
   ctrl_popup_pointLayer = new OpenLayers.Control.SelectFeature(pointLayer, {
-    clickout: false
-    ,hover: false
+    clickout: true
+    ,hover: true // true mean HOVER = selected
     ,toggle: true
     ,clickOut: true
     ,multiple: false
@@ -512,6 +512,9 @@ create_layer_pointLayer = function() {
     }
     content += descr;
     
+    /* 
+    ** Change to use GeoExt.window.Popup class
+    **
     popup_pointLayer = new OpenLayers.Popup.FramedCloud("chicken",
             feature.geometry.getBounds().getCenterLonLat(),
             new OpenLayers.Size(250,180),
@@ -524,6 +527,29 @@ create_layer_pointLayer = function() {
         return 'tr';
     };
     map.addPopup(popup_pointLayer);
+    **
+    **
+    */
+
+    pointPopup = Ext.create('GeoExt.window.Popup', {
+      title: 'Result'
+      ,location: feature
+      ,width: 300
+      ,height: 200
+      ,html: content
+      ,maximizable: true
+      ,collapsible: true
+      ,anchorPosition: 'auto'
+    });
+    pointPopup.show();
+
+    pointPopup.on({
+      close: function() {
+        if(OpenLayers.Util.IndexOf(pointLayer.sel_feat, this.feature) > -1) {
+          ctrl_popup_pointLayer.unselect(this.feature);
+        }
+      }
+    });
   }
 
   function onPointFeatureUnselect(event) {
