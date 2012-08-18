@@ -477,10 +477,9 @@ create_layer_pointLayer = function() {
  
   // Add popup when feature in pointLayer is clicked
   ctrl_popup_pointLayer = new OpenLayers.Control.SelectFeature(pointLayer, {
-    clickout: true
+    clickout: false
     ,hover: true // true mean HOVER = selected
     ,toggle: true
-    ,clickOut: true
     ,multiple: false
     ,box: false
     ,eventListeners: {
