@@ -89,7 +89,8 @@ Ext.application({
     create_layer_markers();
     create_layer_hili();
     
-    //create_layer_pointLayer(); should WAIT until user click Add Custom Layer
+    //should WAIT until user click Add Custom Layer
+    //create_layer_pointLayer();
 
     var toolbarItems = [], action;
     
@@ -198,7 +199,7 @@ Ext.application({
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
     
-    toolbarItems.push("-");
+    toolbarItems.push("-");  
 
     var show_gsv = function(feat) {
       lon = feat.geometry.x;
@@ -300,11 +301,17 @@ Ext.application({
 
     // Measure Length control
     ctrl_measure_length = new OpenLayers.Control.Measure(OpenLayers.Handler.Path, {
-      eventListeners: {
+      persist: true
+      ,geodesic: true
+      ,displaySystem: 'metric'      
+      ,eventListeners: {
         measure: function(evt) {
+          //evt.units --> 'km' , 'm'
+          var unit = (evt.units == 'km') ? 'กิโลเมตร' : 'เมตร';
+          
           Ext.Msg.show({
             title: 'Result'
-            ,msg: "ระยะทางรวม ประมาณ " + numberWithCommas(evt.measure.toFixed(2)) + ' กิโลเมตร'
+            ,msg: "ระยะทางรวม ประมาณ " + numberWithCommas(evt.measure.toFixed(2)) + ' ' + unit
             ,buttons: Ext.Msg.OK
             ,icon: Ext.Msg.INFO
           });
@@ -319,7 +326,6 @@ Ext.application({
       enableToggle: false,
       handler: function(toggled){
         if (toggled.pressed) {
-          //alert('btn_length: active btn_area: deactivate');
           ctrl_measure_area.deactivate();
           ctrl_measure_length.activate();
         } else {
@@ -335,9 +341,12 @@ Ext.application({
     ctrl_measure_area = new OpenLayers.Control.Measure(OpenLayers.Handler.Polygon, {
       eventListeners: {
         measure: function(evt) {
+          //evt.units --> 'km' , 'm'
+          var unit = (evt.units == 'km') ? 'ตารางกิโลเมตร' : ' ตารางเมตร';
+          
           Ext.Msg.show({
             title: 'Result'
-            ,msg: "พื้นที่รวม ประมาณ " + numberWithCommas(evt.measure.toFixed(2)) + ' ตารางกิโลเมตร'
+            ,msg: "พื้นที่รวม ประมาณ " + numberWithCommas(evt.measure.toFixed(2)) + ' ' + unit
             ,buttons: Ext.Msg.OK
             ,icon: Ext.Msg.INFO
           });
@@ -482,6 +491,48 @@ Ext.application({
     });
     toolbarItems.push(btn_print);
     
+
+
+
+    //var vectorLayer = new OpenLayers.Layer.Vector("thubms", {styleMap: styleMap});
+      
+      
+    var numicon = new Ext.form.ComboBox({
+      width: 55
+      ,id: 'id_icon_num'          
+      ,emptyText: 'Icon'
+      ,listConfig: {
+        getInnerTpl: function() {
+          // here you place the images in your combo
+          var tpl = '<div>'+
+                    '<img src="img/{icon}.png" align="center" width="16" height="16" /></div>';
+          return tpl;
+        }
+      }
+      ,store : new Ext.data.SimpleStore({
+        // Add more layers in dropdown here
+        data : [['x1', '1'],['x2','2'],['x3','3'],['x4','4'],['x5','5'],['x6','6'],['x7','7'],['x8','8'],['x9','9']]
+        ,id : 0
+        ,fields : ['icon','text']
+      })
+      ,valueField : 'icon'
+      ,displayField : 'text'
+      ,triggerAction : 'all'
+      ,editable : false
+      ,name : 'icon_num'
+      ,handler: function() {
+        debugger;
+        pointLayer.styleMap = styleMapNumber;
+      }
+    });    
+    //toolbarItems.push(numicon);
+    
+    
+    
+    
+    
+    
+    
     var utmgrid = new OpenLayers.Layer.WMS(
       "UTM Grid",
       "http://203.151.201.129/cgi-bin/mapserv",
@@ -520,6 +571,15 @@ Ext.application({
       iconCls: 'bing'
     });
     bing_aerial.isBaseLayer = true;
+
+
+
+
+
+
+
+
+
 
     mapPanel = Ext.create('GeoExt.panel.Map', {
       border: true,

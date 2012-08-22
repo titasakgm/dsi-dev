@@ -279,14 +279,19 @@ create_layer_vectorLayer = function() {
             getInnerTpl: function() {
               // here you place the images in your combo
               var tpl = '<div>'+
-                        '<img src="img/{icon}.png" align="left">&nbsp;&nbsp;'+
+                        '<img src="img/{icon}.png" align="left" width="16" height="16" >&nbsp;&nbsp;'+
                         '{text}</div>';
               return tpl;
             }
           }
           ,store : new Ext.data.SimpleStore({
             // Add more layers in dropdown here
-            data : [['icon1', 'Layer 1'],['icon2','Layer 2']]
+            data :  [
+                     ['icon1', 'Layer 1']
+                    ,['icon2','Layer 2']
+                    ,['x1','Label 1']
+                    ,['x2','Label 2']
+                    ]
             ,id : 0
             ,fields : ['icon','text']
           })
@@ -434,15 +439,16 @@ create_layer_vectorLayer = function() {
 
 create_layer_pointLayer = function() {
   // Blank style
-  // v_style = new OpenLayers.Style({});
+  var v_style_blank = new OpenLayers.Style({});
   var v_style = new OpenLayers.Style({
     'fillColor': '#ffffff'
-    ,'fillOpacity': 0.9
+    ,'fillOpacity': 1
     ,'strokeColor': '#aaee77'
     ,'strokeWidth': 3
     ,'pointRadius': 5
   });
-  var v_style_map = new OpenLayers.StyleMap({'default': v_style});
+
+  var v_style_map = new OpenLayers.StyleMap({'default': v_style_blank});
   var sym_lookup = {
     'layer_1': {
                   'backgroundGraphic': 'img/icon_marker_green.png'
@@ -456,6 +462,25 @@ create_layer_pointLayer = function() {
                   ,'backgroundHeight': 32
                   ,'backgroundYOffset': -32
                 }                  
+    ,'layer_x1': {
+                  'backgroundGraphic': 'img/x1.png'
+                  ,'backgroundWidth': 32
+                  ,'backgroundHeight': 32
+                  ,'backgroundYOffset': -32
+                }
+    ,'layer_x2': {
+                  'backgroundGraphic': 'img/x2.png'
+                  ,'backgroundWidth': 32
+                  ,'backgroundHeight': 32
+                  ,'backgroundYOffset': -16
+                }
+    ,'layer_x3': {
+                  'backgroundGraphic': 'img/x3.png'
+                  ,'backgroundWidth': 32
+                  ,'backgroundHeight': 32
+                  ,'backgroundYOffset': -16
+                }
+
   };
   v_style_map.addUniqueValueRules('default','kmlname',sym_lookup);
 

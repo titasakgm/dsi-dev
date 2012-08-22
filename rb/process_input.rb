@@ -84,7 +84,7 @@ end
 
 c = CGI::new
 name = c['name']
-layer = c['icon'].split('').last
+layer = c['icon'].split('_').last
 kmlname = "layer_#{layer}"
 descr = c['description']
 imgname = c['imgname']
