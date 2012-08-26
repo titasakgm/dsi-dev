@@ -42,6 +42,7 @@ var create_layer_vectorLayer, vectorLayer, frm_input_ctrl, frm_input, popup_vect
 var create_layer_markers, marker, markers, popup_marker;
 var create_layer_hili, hili;
 var create_layer_pointLayer, pointLayer, ctrl_popup_pointLayer, popup_pointLayer, del_feat_ctrl;
+var create_layer_kml, kml;
 
 google.load("earth", "1");
 
@@ -657,6 +658,26 @@ create_layer_hili = function() {
     }
   );
   hili.setOpacity(0);
+}
+
+create_layer_kml = function(kmlname) {
+  if (kml)
+    kml = null;
+    
+  kml = new OpenLayers.Layer.Vector("KML", {
+    projection: map.displayProjection
+    ,strategies: [new OpenLayers.Strategy.Fixed()]
+    ,protocol: new OpenLayers.Protocol.HTTP({
+      url: kmlname
+      ,format: new OpenLayers.Format.KML({
+        externalProjection: new OpenLayers.Projection("ESPG:4326")
+        ,internalProjection: new OpenLayers.Projection("ESPG:900913")
+        ,extractStyles: true
+        ,extractAttributes: true
+      })
+    })
+  });
+  map.addLayer(kml);
 }
 
 //////////////////////////////////////////////
@@ -1467,6 +1488,57 @@ var searchquery = Ext.create("Ext.form.Panel",{
         Ext.getCmp('btn_search').disable();
       }
     }]
+  }]
+});
+
+var loadxls = Ext.create("Ext.form.Panel",{
+  id: 'id_loadxls'
+  ,title: 'Upoad XLS'
+  ,width: 500
+  ,frame: true
+  ,title: 'Upload XLS'
+  ,bodyPadding: '10 10 0'
+  ,defaults: {
+    anchor: '100%'
+    ,xtype: 'textfield'
+    ,msgTarget: 'side'
+    ,labelWidth: 50
+  }
+  ,items: [{
+    xtype: 'filefield'
+    ,name: 'file'
+    ,id: 'id_file_xls'
+    ,fieldLabel: 'XLS'
+    ,labelWidth: 50
+    ,msgTarget: 'side'
+    ,allowBlank: true
+    ,buttonText: ''
+    ,buttonConfig: {
+      iconCls: 'upload'
+    }
+  }]
+  ,buttons: [{
+    text: 'Upload'
+    ,handler: function() {
+      var form = this.up('form').getForm();
+      if (form.isValid()) {
+        form.submit({
+          url: 'rb/file-upload-xls.rb'
+          ,waitMsg: 'Uploading XLS...'
+          //,success: function(response, opts) { NOT WORKING ?!?!?
+          ,success: function(fp, o) {
+            var data = Ext.decode(o.response.responseText);  
+            var kmlname = data.kmlname;
+            create_layer_kml(kmlname);                       
+          }
+        })
+      }
+    }
+  },{
+    text: 'Reset',
+    handler: function() {
+      this.up('form').getForm().reset();
+    }
   }]
 });
 

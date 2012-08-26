@@ -192,8 +192,10 @@ Ext.application({
       iconCls: 'deleteallfeature',
       toggleGroup: 'map',
       handler: function() {
-        if (vectorLayer.features)
+        if (vectorLayer && vectorLayer.features)
           vectorLayer.removeFeatures(vectorLayer.features);
+        if (kml && kml.features)
+          kml.removeFeatures(kml.features);
       },
       allowDepress: true
     });
@@ -342,7 +344,7 @@ Ext.application({
       eventListeners: {
         measure: function(evt) {
           //evt.units --> 'km' , 'm'
-          var unit = (evt.units == 'km') ? 'ตารางกิโลเมตร' : ' ตารางเมตร';
+          var unit = (evt.units == 'km') ? 'ตารางกิโลเมตร' : 'ตารางเมตร';
           
           Ext.Msg.show({
             title: 'Result'
@@ -490,13 +492,7 @@ Ext.application({
       }
     });
     toolbarItems.push(btn_print);
-    
-
-
-
-    //var vectorLayer = new OpenLayers.Layer.Vector("thubms", {styleMap: styleMap});
-      
-      
+  
     var numicon = new Ext.form.ComboBox({
       width: 55
       ,id: 'id_icon_num'          
@@ -526,12 +522,6 @@ Ext.application({
       }
     });    
     //toolbarItems.push(numicon);
-    
-    
-    
-    
-    
-    
     
     var utmgrid = new OpenLayers.Layer.WMS(
       "UTM Grid",
@@ -571,15 +561,6 @@ Ext.application({
       iconCls: 'bing'
     });
     bing_aerial.isBaseLayer = true;
-
-
-
-
-
-
-
-
-
 
     mapPanel = Ext.create('GeoExt.panel.Map', {
       border: true,
@@ -707,7 +688,7 @@ Ext.application({
         items: toolbarItems
       }]
     });
-  
+    
     overlay = Ext.create('GeoExt.tree.OverlayLayerContainer',{
       loader: {
         filter: function(record) {
@@ -765,7 +746,7 @@ Ext.application({
       split: true,
       layout: 'accordion',
       items: [
-        tree,gps,gps_utm,gps_utm_indian,searchquery
+        tree,gps,gps_utm,gps_utm_indian,searchquery,loadxls
       ],
       listeners: {
         render: {
