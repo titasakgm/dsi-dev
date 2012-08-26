@@ -19,6 +19,27 @@ kml = <<EOF
 <kml xmlns="http://earth.google.com/kml/2.1">
   <Folder>
     <name>kml</name>
+    <Style id="gg-pin-green">
+      <IconStyle>
+        <Icon>
+          <href>img/gg-pin-green.png</href>
+        </Icon>
+      </IconStyle>
+    </Style>
+    <Style id="gg-pin-pink">
+      <IconStyle>
+        <Icon>
+          <href>img/gg-pin-pink.png</href>
+        </Icon>
+      </IconStyle>
+    </Style>
+    <Style id="gg-pin-blue">
+      <IconStyle>
+        <Icon>
+          <href>img/gg-pin-blue.png</href>
+        </Icon>
+      </IconStyle>
+    </Style>
     <Placemark>
 EOF
 geom = lon = lat = nil
@@ -36,7 +57,11 @@ colx = nil
     if (!lon.nil? and !lat.nil?)
       geom = "<coordinates>#{lon},#{lat}</coordinates>"
     end
-    kml << "      <#{hdr}>#{s.cell(col,n)}</#{hdr}>\n"
+    if (hdr.downcase == 'icon')
+      kml << "      <styleUrl>##{s.cell(col,n)}</styleUrl>\n"
+    else
+      kml << "      <#{hdr}>#{s.cell(col,n)}</#{hdr}>\n"
+    end
   end
   kml << "      <Point>\n"
   kml << "        #{geom}\n"

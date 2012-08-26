@@ -292,6 +292,7 @@ create_layer_vectorLayer = function() {
                     ,['icon2','Layer 2']
                     ,['x1','Label 1']
                     ,['x2','Label 2']
+                    ,['x3','Label 3']
                     ]
             ,id : 0
             ,fields : ['icon','text']
@@ -465,21 +466,21 @@ create_layer_pointLayer = function() {
                 }                  
     ,'layer_x1': {
                   'backgroundGraphic': 'img/x1.png'
-                  ,'backgroundWidth': 32
-                  ,'backgroundHeight': 32
-                  ,'backgroundYOffset': -32
+                  ,'backgroundWidth': 27
+                  ,'backgroundHeight': 27
+                  ,'backgroundYOffset': 0
                 }
     ,'layer_x2': {
                   'backgroundGraphic': 'img/x2.png'
-                  ,'backgroundWidth': 32
-                  ,'backgroundHeight': 32
-                  ,'backgroundYOffset': -16
+                  ,'backgroundWidth': 27
+                  ,'backgroundHeight': 27
+                  ,'backgroundYOffset': 0
                 }
     ,'layer_x3': {
                   'backgroundGraphic': 'img/x3.png'
-                  ,'backgroundWidth': 32
-                  ,'backgroundHeight': 32
-                  ,'backgroundYOffset': -16
+                  ,'backgroundWidth': 27
+                  ,'backgroundHeight': 27
+                  ,'backgroundYOffset': 0
                 }
 
   };
@@ -1493,7 +1494,7 @@ var searchquery = Ext.create("Ext.form.Panel",{
 
 var loadxls = Ext.create("Ext.form.Panel",{
   id: 'id_loadxls'
-  ,title: 'Upoad XLS'
+  ,title: 'Upoad XLS (with Geom)'
   ,width: 500
   ,frame: true
   ,title: 'Upload XLS'
