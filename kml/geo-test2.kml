@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.1">
+  <Folder>
+    <name>kml</name>
+    <Style id="gg-pin-green">
+      <IconStyle>
+        <Icon>
+          <href>img/gg-pin-green.png</href>
+        </Icon>
+      </IconStyle>
+    </Style>
+    <Style id="gg-pin-pink">
+      <IconStyle>
+        <Icon>
+          <href>img/gg-pin-pink.png</href>
+        </Icon>
+      </IconStyle>
+    </Style>
+    <Style id="gg-pin-blue">
+      <IconStyle>
+        <Icon>
+          <href>img/gg-pin-blue.png</href>
+        </Icon>
+      </IconStyle>
+    </Style>
+    <Placemark>
+      <name>Point 1</name>
+      <description>aaaa</description>
+      <styleUrl>#gg-pin-blue</styleUrl>
+      <Point>
+        <coordinates>100.0,13.0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Point 2</name>
+      <description>bbbb</description>
+      <styleUrl>#gg-pin-pink</styleUrl>
+      <Point>
+        <coordinates>101.0,14.0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Point 3</name>
+      <description>cccc</description>
+      <styleUrl>#gg-pin-green</styleUrl>
+      <Point>
+        <coordinates>102.0,15.0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Point 4</name>
+      <description>dddd</description>
+      <styleUrl>#gg-pin-pink</styleUrl>
+      <Point>
+        <coordinates>103.0,16.0</coordinates>
+      </Point>
+    </Placemark>
+  </Folder>
+</kml>
