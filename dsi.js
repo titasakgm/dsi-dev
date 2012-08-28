@@ -194,8 +194,10 @@ Ext.application({
       handler: function() {
         if (vectorLayer && vectorLayer.features)
           vectorLayer.removeFeatures(vectorLayer.features);
-        if (kml && kml.features)
+        if (kml && kml.features) {
           kml.removeFeatures(kml.features);
+          map.removeLayer(kml);
+        }
       },
       allowDepress: true
     });

@@ -42,7 +42,7 @@ var create_layer_vectorLayer, vectorLayer, frm_input_ctrl, frm_input, popup_vect
 var create_layer_markers, marker, markers, popup_marker;
 var create_layer_hili, hili;
 var create_layer_pointLayer, pointLayer, ctrl_popup_pointLayer, popup_pointLayer, del_feat_ctrl;
-var create_layer_kml, kml;
+var create_layer_kml, kml, select_kml;
 
 google.load("earth", "1");
 
@@ -293,6 +293,12 @@ create_layer_vectorLayer = function() {
                     ,['x1','Label 1']
                     ,['x2','Label 2']
                     ,['x3','Label 3']
+                    ,['x4','Label 4']
+                    ,['x5','Label 5']
+                    ,['x6','Label 6']
+                    ,['x7','Label 7']
+                    ,['x8','Label 8']
+                    ,['x9','Label 9']
                     ]
             ,id : 0
             ,fields : ['icon','text']
@@ -412,7 +418,9 @@ create_layer_vectorLayer = function() {
                 // Update new feature in pointLayer ?? better solution ??
                 if (pointLayer) {
                   map.removeLayer(pointLayer);
-                  pointLayer = null
+                  map.removeControl(ctrl_popup_pointLayer);
+                  pointLayer = null;
+                  ctrl_popup_pointLayer = null;
                 }
                 create_layer_pointLayer();
                 map.addLayer(pointLayer);
@@ -439,18 +447,18 @@ create_layer_vectorLayer = function() {
   });
 }
 
+
 create_layer_pointLayer = function() {
   // Blank style
-  var v_style_blank = new OpenLayers.Style({});
+  // v_style = new OpenLayers.Style({});
   var v_style = new OpenLayers.Style({
     'fillColor': '#ffffff'
-    ,'fillOpacity': 1
-    ,'strokeColor': '#aaee77'
-    ,'strokeWidth': 3
-    ,'pointRadius': 5
+    ,'fillOpacity': .8
+    ,'strokeColor': '#aa0000'
+    ,'strokeWidth': 2
+    ,'pointRadius': 3
   });
-
-  var v_style_map = new OpenLayers.StyleMap({'default': v_style_blank});
+  var v_style_map = new OpenLayers.StyleMap({'default': v_style});
   var sym_lookup = {
     'layer_1': {
                   'backgroundGraphic': 'img/icon_marker_green.png'
@@ -468,20 +476,56 @@ create_layer_pointLayer = function() {
                   'backgroundGraphic': 'img/x1.png'
                   ,'backgroundWidth': 27
                   ,'backgroundHeight': 27
-                  ,'backgroundYOffset': 0
+                  ,'backgroundYOffset': -27
                 }
     ,'layer_x2': {
                   'backgroundGraphic': 'img/x2.png'
                   ,'backgroundWidth': 27
                   ,'backgroundHeight': 27
-                  ,'backgroundYOffset': 0
+                  ,'backgroundYOffset': -27
                 }
     ,'layer_x3': {
                   'backgroundGraphic': 'img/x3.png'
                   ,'backgroundWidth': 27
                   ,'backgroundHeight': 27
-                  ,'backgroundYOffset': 0
+                  ,'backgroundYOffset': -27
                 }
+    ,'layer_x4': {
+                  'backgroundGraphic': 'img/x4.png'
+                  ,'backgroundWidth': 27
+                  ,'backgroundHeight': 27
+                  ,'backgroundYOffset': -27
+                }
+    ,'layer_x5': {
+                  'backgroundGraphic': 'img/x5.png'
+                  ,'backgroundWidth': 27
+                  ,'backgroundHeight': 27
+                  ,'backgroundYOffset': -27
+                }
+    ,'layer_x6': {
+                  'backgroundGraphic': 'img/x6.png'
+                  ,'backgroundWidth': 27
+                  ,'backgroundHeight': 27
+                  ,'backgroundYOffset': -27
+                }
+    ,'layer_x7': {
+                  'backgroundGraphic': 'img/x7.png'
+                  ,'backgroundWidth': 27
+                  ,'backgroundHeight': 27
+                  ,'backgroundYOffset': -27
+                }
+    ,'layer_x8': {
+                  'backgroundGraphic': 'img/x8.png'
+                  ,'backgroundWidth': 27
+                  ,'backgroundHeight': 27
+                  ,'backgroundYOffset': -27
+                }
+    ,'layer_x9': {
+                  'backgroundGraphic': 'img/x9.png'
+                  ,'backgroundWidth': 27
+                  ,'backgroundHeight': 27
+                  ,'backgroundYOffset': -27
+                }                
 
   };
   v_style_map.addUniqueValueRules('default','kmlname',sym_lookup);
@@ -504,9 +548,9 @@ create_layer_pointLayer = function() {
  
   // Add popup when feature in pointLayer is clicked
   ctrl_popup_pointLayer = new OpenLayers.Control.SelectFeature(pointLayer, {
-    clickout: false
-    ,hover: true // true mean HOVER = selected
+    hover: true
     ,toggle: true
+    ,clickOut: false
     ,multiple: false
     ,box: false
     ,eventListeners: {
@@ -537,10 +581,7 @@ create_layer_pointLayer = function() {
       content += "<img class='imgpopup' src='" + imgurl + "' />";
     }
     content += descr;
-    
-    /* 
-    ** Change to use GeoExt.window.Popup class
-    **
+
     popup_pointLayer = new OpenLayers.Popup.FramedCloud("chicken",
             feature.geometry.getBounds().getCenterLonLat(),
             new OpenLayers.Size(250,180),
@@ -553,29 +594,6 @@ create_layer_pointLayer = function() {
         return 'tr';
     };
     map.addPopup(popup_pointLayer);
-    **
-    **
-    */
-
-    pointPopup = Ext.create('GeoExt.window.Popup', {
-      title: 'Result'
-      ,location: feature
-      ,width: 300
-      ,height: 200
-      ,html: content
-      ,maximizable: true
-      ,collapsible: true
-      ,anchorPosition: 'auto'
-    });
-    pointPopup.show();
-
-    pointPopup.on({
-      close: function() {
-        if(OpenLayers.Util.IndexOf(pointLayer.sel_feat, this.feature) > -1) {
-          ctrl_popup_pointLayer.unselect(this.feature);
-        }
-      }
-    });
   }
 
   function onPointFeatureUnselect(event) {
@@ -679,6 +697,52 @@ create_layer_kml = function(kmlname) {
     })
   });
   map.addLayer(kml);
+  
+  
+  
+  
+  select_kml = new OpenLayers.Control.SelectFeature(kml);            
+  kml.events.on({
+      "featureselected": onFeatureSelectKml,
+      "featureunselected": onFeatureUnselectKml
+  });
+
+  map.addControl(select_kml);
+  select_kml.activate();  
+
+ function onPopupKmlClose(evt) {
+            select_kml.unselectAll();
+        }
+        function onFeatureSelectKml(event) {
+            var feature = event.feature;
+            // Since KML is user-generated, do naive protection against
+            // Javascript.
+            var content = "<h2>"+feature.attributes.name + "</h2>" + feature.attributes.description;
+            if (content.search("<script") != -1) {
+                content = "Content contained Javascript! Escaped content below.<br>" + content.replace(/</g, "&lt;");
+            }
+            
+            popupClass = AutoSizeFramedCloud;            
+            
+            popup = new OpenLayers.Popup.FramedCloud("chicken", 
+              feature.geometry.getBounds().getCenterLonLat(),
+              new OpenLayers.Size(100,100),
+              content,
+              null, true, onPopupKmlClose
+            );
+            feature.popup = popup;
+            map.addPopup(popup);
+        }
+        function onFeatureUnselectKml(event) {
+            var feature = event.feature;
+            if(feature.popup) {
+                map.removePopup(feature.popup);
+                feature.popup.destroy();
+                delete feature.popup;
+            }
+        }
+
+
 }
 
 //////////////////////////////////////////////

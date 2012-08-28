@@ -584,7 +584,6 @@ OpenLayers.Format.XML = OpenLayers.Class(OpenLayers.Format, {
         if(!obj) {
             obj = {};
         }
-        debugger;
         var group = this.readers[node.namespaceURI ? this.namespaceAlias[node.namespaceURI]: this.defaultPrefix];
         if(group) {
             var local = node.localName || node.nodeName.split(":").pop();
