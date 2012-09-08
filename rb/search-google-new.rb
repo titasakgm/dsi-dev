@@ -3,103 +3,11 @@
 
 require 'cgi'
 require 'rubygems'
-require 'pg'
 require 'net/http'
-
-c = CGI::new
-kw = c['kw']
 
 def log(msg)
   File.open("/tmp/search-google-new","a").write(msg)
   File.open("/tmp/search-google-new","a").write("\n")
-end
-
-def get_center(text, table)
-  if table =~ /province/
-    cond = "prov_nam_t = '#{text}'"
-  elsif table =~ /amphoe/
-    cond = "amphoe_t = '#{text}'"
-  elsif table =~ /tambon/
-    cond = "tam_nam_t = '#{text}'"
-  elsif table =~ /muban/
-    cond = "muban = '#{text}'"
-  end
-  con = PGconn.connect("localhost",5432,nil,nil,"dsi")
-  sql = "SELECT center(the_geom) "
-  sql += "FROM #{table} "
-  sql += "WHERE #{cond}"
-  res = con.exec(sql)
-  con.close
-  found = res.num_tuples
-  lonlat = []
-  if (found > 0)
-    res.each do |rec|
-      lonlat = rec[0].to_s.tr('()','').split(',')
-    end
-  end
-  lonlat
-end
-
-def search_location(kw)
-  con = PGconn.connect("localhost",5432,nil,nil,"dsi")
-  sql = "SELECT loc_text,loc_table "
-  sql += "FROM locations "
-  sql += "WHERE loc_text = '#{kw}' "
-  res = con.exec(sql)
-  found = res.num_tuples
-  if (found == 0)
-    sql = "SELECT loc_text,loc_table "
-    sql += "FROM locations "
-    sql += "WHERE loc_text LIKE '%#{kw}%' "
-    sql += "AND length(loc_text) = #{kw.length + 2} "
-    res = con.exec(sql)
-    found = res.num_tuples
-    if (found == 0)
-      sql = "SELECT loc_text,loc_table "
-      sql += "FROM locations "
-      sql += "WHERE loc_text LIKE '%#{kw}%' "
-      sql += "ORDER BY id DESC"
-      res = con.exec(sql)
-    end
-  end
-  con.close
-
-  log("sql: #{sql}")
-
-  data = []
-  text = table = nil
-  found = res.num_tuples
-  match = false
-  if (found > 0)
-    res.each do |rec|
-      xtext = rec[0]
-      xtable = rec[1]
-      if (xtable =~ /muban/ && !match)
-        text = xtext
-        table = xtable
-        match = true if (text == kw)
-      end
-      if (xtable =~ /province/)
-        text = xtext
-        table = xtable
-        match = true if (text == kw)
-      end
-      if (xtable =~ /amphoe/)
-        text = xtext
-        table = xtable
-        match = true if (text == kw)
-      end
-      if (xtable =~ /tambon/)
-        text = xtext
-        table = xtable
-        match = true if (text == kw)
-      end    
-    end
-  end
-  lonlat = get_center(text, table)
-  data = [text,table] << lonlat
-  log("data: #{data.join('|')}")
-  data    
 end
 
 def google(kw)
@@ -125,38 +33,10 @@ def google(kw)
   lonlat = [lon,lat]
 end
 
-##### Create hilight for this gid province
-mysearch = search_location(kw)
+c = CGI::new
+kw = c['kw']
 
-#log("mysearch: #{mysearch.join('|')}")
-
-geom = "POLYGON"
-text = mysearch[0]
-table = mysearch[1]
-lonlat = mysearch[2]
-filter = ''
-
-if table =~ /province/
-  filter = "prov_nam_t = '#{text}'"
-elsif table =~ /amphoe/
-  filter = "amphoe_t = '#{text}'"
-elsif table =~ /tambon/
-  filter = "tam_nam_t = '#{text}'"
-elsif table =~ /muban/
-  filter = "muban = '#{text}'"
-  geom = "POINT"
-end
-
-#log("filter: #{filter}")
-
-map = open("/ms521/map/search.tpl").readlines.to_s.gsub('#GEOM#',"#{geom}").gsub('#TABLE#',"#{table}").gsub('#FILTER#',"#{filter}")
-
-File.open("/ms521/map/hili.map","w").write(map)
-##### End of create hilight
-
-if lonlat.nil?
-  lonlat = google(kw)
-end
+lonlat = google(kw)
 
 name = kw
 lon = lonlat.first

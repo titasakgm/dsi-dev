@@ -67,9 +67,7 @@ end
 
 def search_location(query, start, limit, exact)
   lon = lat = 0.0
-  
   con = PGconn.connect("localhost",5432,nil,nil,"dsi","admin")
-
   cond = nil
 
   if exact == 1
