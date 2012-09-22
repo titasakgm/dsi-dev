@@ -1028,6 +1028,13 @@ var gps = Ext.create("Ext.form.Panel",{
 //////////////////////////////////////////////
 // GPS2 support multiformat input
 //////////////////////////////////////////////
+var gps_format = 0;
+
+var gps_tip = "รูปแบบค่าพิกัดที่สามารถเลือกใช้ได้ <br>";
+gps_tip += "100.56578<br>";
+gps_tip += "100 33 56.808<br>";
+gps_tip += "100d 33m 56.808s<br>";
+gps_tip += "100DD 33MM 56.808SS<br>";
 
 function dms2dd(ddd,mm,ss){
   var d = parseFloat(ddd);
@@ -1146,8 +1153,38 @@ function onFeatureUnselect(feature) {
 }
 
 var test_gps2 = function() {
-  Ext.getCmp('gps_lon').setValue("100d 33m 56.808s");
-  Ext.getCmp('gps_lat').setValue("13d 53m 26.592s");
+  //gps_tip += "100.56578<br>";
+  //gps_tip += "100 33 56.808<br>";
+  //gps_tip += "100d 33m 56.808s<br>";
+  //gps_tip += "100DD 33MM 56.808SS<br>";
+  var gps_test_lon;
+  var gps_test_lat;
+
+  gps_format += 1
+  if (gps_format == 1)
+  {
+    gps_test_lon = "100.56578";
+    gps_test_lat = "13.89072";
+  }
+  else if (gps_format == 2)
+  {
+    gps_test_lon = "100 33 56.808";
+    gps_test_lat = "13 53 26.592";
+  }
+  else if (gps_format == 3)
+  {
+    gps_test_lon = "100d 33m 56.808s";
+    gps_test_lat = "13d 53m 26.592s";
+  }
+  else if (gps_format == 4)
+  {
+    gps_format = 0;
+    gps_test_lon = "100DD 33MM 56.808SS";
+    gps_test_lat = "13DD 53MM 26.592SS";
+  }
+  
+  Ext.getCmp('gps_lon').setValue(gps_test_lon);
+  Ext.getCmp('gps_lat').setValue(gps_test_lat);
 }
 
 //Add squeeze prototype
@@ -1229,12 +1266,6 @@ var gps_report = function(lon,lat) {
     }
   });
 };
-
-var gps_tip = "รูปแบบค่าพิกัดที่สามารถเลือกใช้ได้ <br>";
-gps_tip += "100.56578<br>";
-gps_tip += "100 33 56.808<br>";
-gps_tip += "100d 33m 56.808s<br>";
-gps_tip += "100DD 33MM 56.808SS<br>";
 
 var gps2 = Ext.create("Ext.form.Panel",{
   title: 'ตำแหน่งพิกัด GPS'
