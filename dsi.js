@@ -748,7 +748,7 @@ Ext.application({
       split: true,
       layout: 'accordion',
       items: [
-        tree,gps,gps_utm,gps_utm_indian,searchquery,loadxls
+        tree,gps,gps2,gps_utm,gps_utm_indian,searchquery,loadxls
       ],
       listeners: {
         render: {

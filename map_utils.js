@@ -1026,6 +1026,291 @@ var gps = Ext.create("Ext.form.Panel",{
 });
 
 //////////////////////////////////////////////
+// GPS2 support multiformat input
+//////////////////////////////////////////////
+
+function dms2dd(ddd,mm,ss){
+  var d = parseFloat(ddd);
+  var m = parseFloat(mm)/60.0;
+  var s = parseFloat(ss)/3600.0;
+  return d + m + s;
+}
+
+function dd2dms(ll){
+  //debugger;
+  var d1 = ll;
+  var d2 = parseInt(d1 / 100 * 100);
+  var d3 = d1 - d2;
+  var d4 = d3 * 60;
+  var d5 = parseInt(d4);
+  var d6 = d4 - d5;
+  var d7 = d6 * 60;
+  var dms = [];
+  dms[0] = d2;
+  dms[1] = d5;
+  dms[2] = d7.toFixed(2);
+  return dms;
+}
+
+function setMarker(lon, lat, msg){
+  var lonLatMarker = new OpenLayers.LonLat(lon, lat).transform(gcs,merc);
+  var feature = new OpenLayers.Feature(markers, lonLatMarker);
+  feature.closeBox = true;
+  feature.popupClass = OpenLayers.Class(OpenLayers.Popup.AnchoredBubble,
+    {maxSize: new OpenLayers.Size(120, 75) } );
+  feature.data.popupContentHTML = msg;
+  feature.data.overflow = "hidden";
+
+  var size = new OpenLayers.Size(64,64);
+  var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+  var icon = new OpenLayers.Icon('img/icon_marker.png', size, offset);
+  var marker = new OpenLayers.Marker(lonLatMarker, icon);
+  marker.feature = feature;
+
+  var markerClick = function(evt) {
+    if (this.popup == null) {
+      this.popup = this.create_popup_marker(this.closeBox);
+      map.addPopup(this.popup);
+      this.popup.show();
+    } else {
+      this.popup.toggle();
+    }
+    OpenLayers.Event.stop(evt);
+  };
+  markers.addMarker(marker);
+  //map.events.register("click", feature, markerClick);
+}
+
+function addMarkers() {
+
+  var ll, popupClass, popupContentHTML;
+  //anchored bubble popup wide short text contents autosize closebox
+  ll = new OpenLayers.LonLat(13, 100);
+  popupClass = AutoSizeFramedCloud;
+  popupContentHTML = '<div style="background-color:red;">Popup.FramedCloud<br>autosize - wide short text<br>closebox<br>' + samplePopupContentsHTML_WideShort + '</div>' 
+  addMarker(ll, popupClass, popupContentHTML, true);
+}
+
+function addMarker(ll, popupClass, popupContentHTML, closeBox, overflow) {
+  var feature = new OpenLayers.Feature(markers, ll); 
+  feature.closeBox = closeBox;
+  feature.popupClass = popupClass;
+  feature.data.popupContentHTML = popupContentHTML;
+  feature.data.overflow = (overflow) ? "auto" : "hidden";
+            
+  marker = feature.createMarker();
+
+  var markerClick = function (evt) {
+    if (this.popup == null) {
+      this.popup = this.create_popup_marker(this.closeBox);
+      map.addPopup(this.popup);
+      this.popup.show();
+    } else {
+      this.popup.toggle();
+    }
+    currentPopup = this.popup;
+    OpenLayers.Event.stop(evt);
+  };
+  marker.events.register("mousedown", feature, markerClick);
+
+  markers.addMarker(marker);
+}        
+
+function onFeatureSelect(feature) {
+  selectedFeature = feature;
+  popup_marker = new OpenLayers.Popup.FramedCloud(
+    ""
+    ,feature.geometry.getBounds().getCenterLonLat()
+    ,new OpenLayers.Size(100,100)
+    ,"<div style='padding:15px 5px 5px 10px;'>" +
+    "<table style='font-size:13px;color:red'>" + "<tr>" +
+    "<td width='40%'>Name</td>"+ "<td width='5%'>:</td>"+
+    "<td>"+feature.attributes.label+"</td>"+ "</tr>"+
+    "</table></div>"
+    ,null
+    ,true
+    ,onMarkerPopupClose
+  );
+  feature.popup = popup_marker;
+  map.addPopup(popup_marker);
+}
+
+function onMarkerPopupClose(evt) {
+  frm_input_ctrl.unselectAll();
+}
+
+function onFeatureUnselect(feature) {
+  map.removePopup(feature.popup);
+  feature.popup.destroy();
+  feature.popup = null;
+}
+
+var test_gps = function() {
+  Ext.getCmp('londd').setValue(100);
+  Ext.getCmp('lonmm').setValue(33);
+  Ext.getCmp('lonss').setValue(57.9126);
+  Ext.getCmp('latdd').setValue(13);
+  Ext.getCmp('latmm').setValue(53);
+  Ext.getCmp('latss').setValue(26.757);
+}
+
+//Add squeeze prototype
+String.prototype.strip = function() { return this.replace(/^\s+|\s+$/g, ''); }
+
+//Replace many white spaces to 1
+//str.replace(/\s+/g, ' ')
+
+//Combine both
+//"  1    2    3   ".replace(/\s+/g, ' ').strip().split(/\s/g)
+//["1", "2", "3"]
+
+//Remove non-digits from string BUT left out decimal . 
+//str.replace(/[A-Za-z$-]/g, "");
+
+var check_gps2 = function(){
+  var gps_lon = Ext.getCmp('gps_lon').getValue();        
+  var gps_lat = Ext.getCmp('gps_lat').getValue();        
+  var lon,lat;
+  
+  //Reformat gps_lon and gps_lat
+  var lon_arr = gps_lon.replace(/\s+/g, ' ').strip().replace(/[A-Za-z$-]/g, "").split(/\s/g);
+  var lat_arr = gps_lat.replace(/\s+/g, ' ').strip().replace(/[A-Za-z$-]/g, "").split(/\s/g);
+  
+  if (lon_arr.length == 1 && lat_arr.length == 1) //Decimal Degree
+  {
+    lon = lon_arr[0];
+    lat = lat_arr[0];
+  }
+  else if (lon_arr.length == 3 && lat_arr.length == 3) //DD MM SS
+  {
+    lon = dms2dd(lon_arr[0],lon_arr[1],lon_arr[2]);
+    lat = dms2dd(lat_arr[0],lat_arr[1],lat_arr[2]);
+  }
+  else
+  {
+    alert("ข้อมูลที่บันทึกในช่อง Longitude และ/หรือ  Latitude ไม่ถูกต้อง");
+    return false;
+  }
+  gps_report(lon,lat);
+}
+
+var gps_report = function(lon,lat) {  
+  Ext.Ajax.request({
+    url: 'rb/checkLonLatDD.rb'
+    ,params: {
+      method: 'GET'
+      ,lon: lon
+      ,lat: lat
+      ,format: 'json'
+    }
+    ,failure: function(response, opts){
+      alert("checkLonLatDD > failure");
+      return false;            
+    }
+    ,success: function(response, opts){
+      // var data = eval( '(' + response.responseText + ')' );
+      // No response from IE
+      var data = Ext.decode(response.responseText);
+      var lon = parseFloat(data.lon);
+      var lat = parseFloat(data.lat);
+      var msg = data.msg;
+
+      var p1 = new OpenLayers.LonLat(lon,lat);
+      var p2 = p1.transform(gcs,merc);
+      map.setCenter(p2, 14);
+
+      var size = new OpenLayers.Size(48,48);
+      var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+      var icon = new OpenLayers.Icon('img/icon_marker.png', size, offset);
+      markers.addMarker(new OpenLayers.Marker(p2,icon));
+      info('Result',data.msg);
+    }
+  });
+};
+
+var gps2 = Ext.create("Ext.form.Panel",{
+  title: 'ตำแหน่งพิกัด GPS2'
+  ,id: 'id_gps2'
+  ,frame: true
+  ,items: [{
+    xtype: 'fieldcontainer'
+    ,layout: {
+      type: 'hbox'
+      ,padding:'5'
+      ,pack:'center'
+    }
+    ,fieldDefaults: {
+      labelSeparator: ''
+      ,labelAlign: 'top'
+      ,margin: '0 5 0 0'
+    }
+    ,items: [{
+      xtype:'textfield'
+      ,id: 'gps_lon'
+      ,fieldLabel: 'Longitude'
+      ,width: 150
+    },{
+      xtype: 'displayfield'
+      ,fieldLabel: '&nbsp;'
+      ,value: 'E'
+    }]
+  },{
+    xtype: 'fieldcontainer'
+    ,layout: {
+      type: 'hbox'
+      ,padding:'5'
+      ,pack:'center'
+    }
+    ,fieldDefaults: {
+      labelSeparator: ''
+      ,labelAlign: 'top'
+      ,margin: '0 5 0 0'
+    }
+    ,items: [{
+      xtype:'textfield'
+      ,id: 'gps_lat'
+      ,fieldLabel: 'Lat:DD'
+      ,width: 150
+    },{
+      xtype: 'displayfield'
+      ,fieldLabel: '&nbsp;'
+      ,value: 'N'
+    }]
+  },{
+    xtype: 'fieldcontainer'
+    ,layout: {
+      type: 'hbox'
+      ,padding:'5'
+      ,pack:'center'
+    }
+    ,fieldDefaults: {
+      labelSeparator: ''
+      ,labelAlign: 'top'
+      ,margin: '0 5 0 0'
+    }
+    ,items: [{
+      xtype: 'button'
+      ,text: 'Check'
+      ,handler: check_gps2
+      ,width: 80
+    },{
+      xtype: 'button'
+      ,text: 'Clear'
+      ,handler: function(){
+        gps2.getForm().reset();
+        markers.clearMarkers();
+      }
+      ,width: 80
+    },{
+      xtype: 'button'
+      ,text: 'Test'
+      ,handler: test_gps2
+      ,width: 80
+    }]
+  }]    
+});
+
+//////////////////////////////////////////////
 // UTM
 //////////////////////////////////////////////
 
