@@ -66,7 +66,7 @@ npark = check_npark(lon,lat)
 rforest = check_rforest(lon,lat)
 #uforest = check_uforest(lon,lat)
 
-msg = "GPSXX<br>"
+msg = "<br>"
 
 if (npark == "NA")
   msg += "<br><b><font color=\"green\">ไม่อยู่ในเขตอุทยานแห่งชาติ</font></b>"

@@ -1146,8 +1146,8 @@ function onFeatureUnselect(feature) {
 }
 
 var test_gps2 = function() {
-  Ext.getCmp('gps_lon').setValue("100d 33m 57.9126s");
-  Ext.getCmp('gps_lat').setValue("13d 53m 26.757s");
+  Ext.getCmp('gps_lon').setValue("100d 33m 56.808s");
+  Ext.getCmp('gps_lat').setValue("13d 53m 26.592s");
 }
 
 //Add squeeze prototype
