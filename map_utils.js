@@ -1346,6 +1346,8 @@ var gps2 = Ext.create("Ext.form.Panel",{
       ,tooltip: gps_tip      
       ,handler: test_gps2
       ,width: 80
+    },{
+      html: '<font color="green"><b>Click ที่ปุ่ม [Test] เพื่อเปลี่ยนรูปแบบของ GPS ที่สามารถใช้งานได้</b></font>'
     }]
   }]    
 });
