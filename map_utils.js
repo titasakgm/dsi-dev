@@ -1349,8 +1349,9 @@ var gps2 = Ext.create("Ext.form.Panel",{
     }]
   },{
     xtype: 'panel'
+    ,border: false
     ,items: [{
-      html: '<font color="green"><b>Click ที่ปุ่ม [Test]<br>เพื่อเปลี่ยนรูปแบบของ GPS ที่สามารถใช้งานได้</b></font>'
+      html: '<center><font color="green">Click ที่ปุ่ม [Test]<br>เพื่อเปลี่ยนรูปแบบของ GPS<br>ที่สามารถใช้งานได้</font></center>'
     }]
   }]    
 });
