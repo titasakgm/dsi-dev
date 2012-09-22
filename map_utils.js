@@ -1237,7 +1237,7 @@ gps_tip += "100d 33m 56.808s<br>";
 gps_tip += "100DD 33MM 56.808SS<br>";
 
 var gps2 = Ext.create("Ext.form.Panel",{
-  title: 'ตำแหน่งพิกัด GPS2'
+  title: 'ตำแหน่งพิกัด GPS'
   ,id: 'id_gps2'
   ,frame: true
   ,items: [{
@@ -1299,7 +1299,6 @@ var gps2 = Ext.create("Ext.form.Panel",{
     ,items: [{
       xtype: 'button'
       ,text: 'Check'
-      ,tooltip: gps_tip
       ,handler: check_gps2
       ,width: 80
     },{
@@ -1313,6 +1312,7 @@ var gps2 = Ext.create("Ext.form.Panel",{
     },{
       xtype: 'button'
       ,text: 'Test'
+      ,tooltip: gps_tip      
       ,handler: test_gps2
       ,width: 80
     }]
