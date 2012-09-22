@@ -1230,6 +1230,12 @@ var gps_report = function(lon,lat) {
   });
 };
 
+var gps_tip = "รูปแบบค่าพิกัดที่สามารถเลือกใช้ได้ <br>";
+gps_tip += "100.56578"<br>;
+gps_tip += "100 33 56.808"<br>;
+gps_tip += "100d 33m 56.808s<br>";
+gps_tip += "100DD 33MM 56.808SS<br>";
+
 var gps2 = Ext.create("Ext.form.Panel",{
   title: 'ตำแหน่งพิกัด GPS2'
   ,id: 'id_gps2'
@@ -1298,6 +1304,7 @@ var gps2 = Ext.create("Ext.form.Panel",{
     },{
       xtype: 'button'
       ,text: 'Clear'
+      ,tooltip: gps_tip
       ,handler: function(){
         gps2.getForm().reset();
         markers.clearMarkers();
