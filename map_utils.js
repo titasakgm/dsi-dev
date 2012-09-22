@@ -1147,7 +1147,7 @@ function onFeatureUnselect(feature) {
 
 var test_gps2 = function() {
   Ext.getCmp('gps_lon').setValue("100d 33m 57.9126s");
-  Ext.getCmp('gps_lat').setValue("13d 53m 26.7575s");
+  Ext.getCmp('gps_lat').setValue("13d 53m 26.757s");
 }
 
 //Add squeeze prototype
@@ -1163,6 +1163,8 @@ String.prototype.strip = function() { return this.replace(/^\s+|\s+$/g, ''); }
 //Remove non-digits from string BUT left out decimal . 
 //str.replace(/[A-Za-z$-]/g, "");
 
+var gps_msg;
+
 var check_gps2 = function(){
   var gps_lon = Ext.getCmp('gps_lon').getValue();        
   var gps_lat = Ext.getCmp('gps_lat').getValue();        
@@ -1176,11 +1178,14 @@ var check_gps2 = function(){
   {
     lon = lon_arr[0];
     lat = lat_arr[0];
+    gps_msg = "พิกัด " + lon + " E " + lat + " N<br>";
   }
   else if (lon_arr.length == 3 && lat_arr.length == 3) //DD MM SS
   {
     lon = dms2dd(lon_arr[0],lon_arr[1],lon_arr[2]);
     lat = dms2dd(lat_arr[0],lat_arr[1],lat_arr[2]);
+    gps_msg = "พิกัด " + lon_arr[0] + "&deg; " + lon_arr[1] + "&apos; " + lon_arr[2] + "#&quot; E "
+    gps_msg += lat_arr[0] + "&deg; " + lat_arr[1] + "&apos; " + lat_arr[2] + "&quot; N<br>"
   }
   else
   {
@@ -1210,7 +1215,8 @@ var gps_report = function(lon,lat) {
       var lon = parseFloat(data.lon);
       var lat = parseFloat(data.lat);
       var msg = data.msg;
-
+      gps_msg += msg;
+      
       var p1 = new OpenLayers.LonLat(lon,lat);
       var p2 = p1.transform(gcs,merc);
       map.setCenter(p2, 14);
@@ -1219,7 +1225,7 @@ var gps_report = function(lon,lat) {
       var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
       var icon = new OpenLayers.Icon('img/icon_marker.png', size, offset);
       markers.addMarker(new OpenLayers.Marker(p2,icon));
-      info('Result',data.msg);
+      info('Result',gps_msg);
     }
   });
 };
@@ -1265,7 +1271,7 @@ var gps2 = Ext.create("Ext.form.Panel",{
     ,items: [{
       xtype:'textfield'
       ,id: 'gps_lat'
-      ,fieldLabel: 'Lat:DD'
+      ,fieldLabel: 'Latitude'
       ,width: 150
     },{
       xtype: 'displayfield'
