@@ -1221,7 +1221,7 @@ var check_gps2 = function(){
   {
     lon = dms2dd(lon_arr[0],lon_arr[1],lon_arr[2]);
     lat = dms2dd(lat_arr[0],lat_arr[1],lat_arr[2]);
-    gps_msg = "พิกัด " + lon_arr[0] + "&deg; " + lon_arr[1] + "&apos; " + lon_arr[2] + "#&quot; E "
+    gps_msg = "พิกัด " + lon_arr[0] + "&deg; " + lon_arr[1] + "&apos; " + lon_arr[2] + "&quot; E "
     gps_msg += lat_arr[0] + "&deg; " + lat_arr[1] + "&apos; " + lat_arr[2] + "&quot; N<br>"
   }
   else
