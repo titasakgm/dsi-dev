@@ -68,7 +68,7 @@ Ext.application({
       var lonlat = map.getLonLatFromViewPortPx(e.xy).transform(merc, gcs);
       var activelayers = map.getLayersBy("visibility", true);
       for(i=0;i<activelayers.length;i++) {
-        if (activelayers[i].name.search('เขต') != -1)
+        if (activelayers[i].name.search('เขต') != -1 || activelayers[i].name.search('ชายเลน') != -1)
         check_forest_info(activelayers[i].name, lonlat);
       }
     });

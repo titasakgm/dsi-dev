@@ -24,33 +24,23 @@
       </IconStyle>
     </Style>
     <Placemark>
+      <name>กกก</name>
+      <description>ขขข</description>
+      <styleUrl>#gg-pin-green</styleUrl>
+      <f1>คคค</f1>
+      <f2>งงง</f2>
+      <Point>
+        <coordinates>100.0,14.0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
       <name>aaa</name>
       <description>bbb</description>
       <styleUrl>#gg-pin-blue</styleUrl>
-      <fld1>xxx</fld1>
-      <fld2>yyy</fld2>
+      <f1>ccc</f1>
+      <f2>ddd</f2>
       <Point>
-        <coordinates>100.0,13.0</coordinates>
-      </Point>
-    </Placemark>
-    <Placemark>
-      <name>ccc</name>
-      <description>ddd</description>
-      <styleUrl>#gg-pin-pink</styleUrl>
-      <fld1>qqq</fld1>
-      <fld2>www</fld2>
-      <Point>
-        <coordinates>101.0,12.0</coordinates>
-      </Point>
-    </Placemark>
-    <Placemark>
-      <name>fff</name>
-      <description>ggg</description>
-      <styleUrl>#gg-pin-greenaaa</styleUrl>
-      <fld1></fld1>
-      <fld2>sss</fld2>
-      <Point>
-        <coordinates>102.0,11.0</coordinates>
+        <coordinates>101.0,15.0</coordinates>
       </Point>
     </Placemark>
   </Folder>
