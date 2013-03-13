@@ -42,7 +42,7 @@ name = kw
 lon = lonlat.first
 lat = lonlat.last
 
-msg = data = "{'text':'#{text}','name':'#{name}','lon':'#{lon}','lat':'#{lat}','table':'#{table}'}"
+data = "{'text':'#{text}','name':'#{name}','lon':'#{lon}','lat':'#{lat}','table':'#{table}'}"
 
 print <<EOF
 Content-type: text/html

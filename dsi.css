@@ -60,6 +60,10 @@ div.olLayerGoogleCopyright {
   background-image: url("img/icon_zoomfull.png") !important;
 }
 
+.my_location {
+  background-image: url("img/my_location.png") !important;
+}
+
 .zoomin {
   background-image: url("img/icon_zoomin.png") !important;
 }

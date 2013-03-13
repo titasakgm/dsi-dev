@@ -104,8 +104,45 @@ Ext.application({
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
     
+    // Add my_location
+    action = Ext.create('GeoExt.Action',{
+      tooltip: 'ไปยังตำแหน่งปัจจุบัน',
+      iconCls: 'my_location',
+      handler: function(){
+        Ext.Ajax.request({
+          url: 'rb/get_lonlat_from_ip.rb'
+          ,params: {
+            method: 'GET'
+            ,format: 'json'
+          }
+          ,failure: function(response, opts){
+            alert("get_lonlat_from_ip.rb > failure");
+            return false;
+          }
+          ,success: function(response, opts){
+            // var data = eval( '(' + response.responseText + ')' );
+            // No response from IE
+            var data = Ext.decode(response.responseText);
+            var lon = parseFloat(data.lon);
+            var lat = parseFloat(data.lat);
+
+            var p1 = new OpenLayers.LonLat(lon,lat);
+            var p2 = p1.transform(gcs,merc);
+            map.setCenter(p2, 8);
+
+            var size = new OpenLayers.Size(48,48);
+            var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+            var icon = new OpenLayers.Icon('img/my_locationx.png', size, offset);
+            markers.addMarker(new OpenLayers.Marker(p2,icon));
+          }
+        });
+      },
+      allowDepress: false
+    });
+    toolbarItems.push(Ext.create('Ext.button.Button', action));
+    
     toolbarItems.push("-");
-  
+                     
     action = Ext.create('GeoExt.Action',{
       control: new OpenLayers.Control.ZoomBox(),
       tooltip: 'ขยายขนาดภาพแผนที่ (กดปุ่ม Shift ค้างไว้จากนั้น Click Mouse ปุ่มซ้ายมือค้างไว้แล้วลากเป็นกรอบสี่เหลี่ยมได้)',
@@ -415,7 +452,6 @@ Ext.application({
       iconCls: 'grid2',
       enableToggle: true,
       handler: function() {
-        //debugger;
         if (utmgrid.visibility == false)
           utmgrid.setVisibility(true);
         else
@@ -519,7 +555,6 @@ Ext.application({
       ,editable : false
       ,name : 'icon_num'
       ,handler: function() {
-        debugger;
         pointLayer.styleMap = styleMapNumber;
       }
     });    
