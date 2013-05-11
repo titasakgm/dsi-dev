@@ -164,10 +164,10 @@ def search_location(query, start, limit, exact)
     return_data[:totalcount] = found
     return_data[:records] = records
     
-  elsif found == 1
+  elsif found == 1 # exact != 1
     sql = "SELECT loc_gid,loc_text,loc_table "
     sql += "FROM locations "
-    sql += "WHERE loc_text LIKE '%#{query}%' "
+    sql += "WHERE loc_text LIKE '#{query}%' "
 
     log("sql:found=1: #{sql}")
 
