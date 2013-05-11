@@ -145,6 +145,8 @@ def search_location(query, start, limit, exact)
     sql += "ORDER BY id DESC "
     sql += "LIMIT #{limit} OFFSET #{start}"
 
+    log("sql:found>1: #{sql}")
+
     res = con.exec(sql)
     records = []
     res.each do |rec|
@@ -166,6 +168,8 @@ def search_location(query, start, limit, exact)
     sql = "SELECT loc_gid,loc_text,loc_table "
     sql += "FROM locations "
     sql += "WHERE loc_text LIKE '%#{query}%' "
+
+    log("sql:found=1: #{sql}")
 
     res = con.exec(sql)
     gid = 0
