@@ -48,7 +48,7 @@ def get_center(table,gid)
   sql += "FROM #{table} "
   sql += "WHERE gid=#{gid}"
   
-  log("get_center:sql: #{sql}")
+  #log("get_center:sql: #{sql}")
   
   res = con.exec(sql)
   con.close
@@ -124,11 +124,11 @@ def search_location(query, start, limit, exact)
     cond = "loc_text LIKE '%#{query}%' "
   end
 
-  log("cond: #{cond}")
+  #log("cond: #{cond}")
   
   sql = "SELECT count(*) as cnt FROM locations WHERE #{cond}" 
 
-  log("sql: #{sql}")
+  #log("sql: #{sql}")
 
   res = con.exec(sql)
   found = 0
@@ -145,7 +145,7 @@ def search_location(query, start, limit, exact)
     sql += "ORDER BY id DESC "
     sql += "LIMIT #{limit} OFFSET #{start}"
 
-    log("sql:found>1: #{sql}")
+    #log("sql:found>1: #{sql}")
 
     res = con.exec(sql)
     records = []
@@ -169,7 +169,7 @@ def search_location(query, start, limit, exact)
     sql += "FROM locations "
     sql += "WHERE loc_text LIKE '#{query}%' "
 
-    log("sql:found=1: #{sql}")
+    #log("sql:found=1: #{sql}")
 
     res = con.exec(sql)
     gid = 0
