@@ -104,7 +104,8 @@ def search_location(query, start, limit, exact)
     return return_data
   end
   
-  if query =~ /\./
+  # add space check in query
+  if query =~ /\./ and query.strip !~ /\ /     
     cond = "loc_text LIKE '#{query}%' "
   elsif query.strip =~ /\ /
     kws = query.strip.split(' ')
@@ -126,6 +127,8 @@ def search_location(query, start, limit, exact)
   log("cond: #{cond}")
   
   sql = "SELECT count(*) as cnt FROM locations WHERE #{cond}" 
+
+  log("sql: #{sql}")
 
   res = con.exec(sql)
   found = 0
