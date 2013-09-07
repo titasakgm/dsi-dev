@@ -39,7 +39,7 @@ Ext.application({
     // DSI location
     var center = new OpenLayers.LonLat(100.5657899,13.89071588);
     var dsi = center.transform(gcs,merc);
-    
+       
     var ctrl = new OpenLayers.Control.NavigationHistory();
     // Add Bing Map
     // API key for http://203.151.201.129/dsi
@@ -127,7 +127,7 @@ Ext.application({
             var lat = parseFloat(data.lat);
 
             var p1 = new OpenLayers.LonLat(lon,lat);
-            var p2 = p1.transform(gcs,merc);
+            p2 = p1.transform(gcs,merc);
             map.setCenter(p2, 8);
 
             var size = new OpenLayers.Size(48,48);
@@ -183,7 +183,84 @@ Ext.application({
       toggleGroup: 'map'
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
-    
+
+    function showWin(map, vectorLayer){
+      var winname = "radii";
+      var win = new Ext.Window({
+        id: winname,
+        //height: 200,
+        width: 200,
+        constrain: true,
+        collapsible: true,
+        layout: 'fit',
+        title: 'ระบุรัศมีที่ต้องการ',
+        items: [{
+          xtype: 'combo',
+          allowBlank: false,
+          name: 'Radius',
+          forceSelection: true, //limit vals to list
+          editable: false, //prevent text being entered
+          fieldLabel: 'รัศมี',
+          labelWidth: 50,
+          emptyText: 'เลือกระยะที่ต้องการ...',
+          store: new Ext.data.SimpleStore({
+            fields: ['radius', 'value'],
+            data: [["100 เมตร", "100"], ["200 เมตร", "200"], ["500 เมตร", "500"], ["1 ก.ม.", "1000"], ["5 ก.ม.", "5000"], ["10 ก.ม.", "10000"]]
+          }),
+          displayField: 'radius',
+          valueField: 'value',
+          selectOnFocus: true,
+          mode: 'local',
+          triggerAction: 'all',
+          listeners: {
+            select: function(combo, record, index){
+              var radius = record[0].data.value;
+              var feature = vectorLayer.features[vectorLayer.features.length - 1];
+              if (feature) {
+                var centroid = feature.geometry.getCentroid();
+                var projection = map.getProjectionObject();
+                
+                var sides = 40;
+                var new_geom = OpenLayers.Geometry.Polygon.createGeodesicPolygon(centroid, radius, sides, 45, projection);
+                
+                var new_feature = new OpenLayers.Feature.Vector(new_geom);
+                vectorLayer.addFeatures([new_feature]);
+              }
+            }            
+          }
+        }]
+      });
+      win.show();
+      var mapId = map.div.id;
+      win.alignTo(Ext.getDom(mapId), 'tr-tr', [-150, 6]);
+    }
+
+    action = Ext.create('GeoExt.Action',{
+      control: new OpenLayers.Control.SelectFeature(vectorLayer, {
+        hover: false,
+        eventListeners: {
+          featurehighlighted: function() {
+            showWin(map, vectorLayer);            
+          },
+          featureunhighlighted: function() {
+            Ext.getCmp('radii').hide();
+            Ext.MessageBox.show({
+              title:'คำแนะนำ',
+              msg: 'ท่านสามารถกดปุ่ม <img src="img/delete.png"/> เพื่อลบการแสดงผล Buffer Zone',
+              buttons: Ext.MessageBox.OK,
+              icon: Ext.MessageBox.INFO
+            })
+          }
+        }
+      }),
+      tooltip: 'วาด Buffer รอบจุดที่ต้องการบนแผนที ก่อนใช้งาน กรุณาสร้างจุดที่ต้องการก่อนโดยใช้เครื่องมือ วางจุดบนแผนที่ก่อน กดปุ่มเลือกเครื่องมือนี้ จากนั้นนำ mouse ไป click เลือกจุดดังกล่าว',
+      map: map,
+      iconCls: 'add_buffer',
+      toggleGroup: 'map',
+      allowDepress: true
+    });
+    toolbarItems.push(Ext.create('Ext.button.Button', action));
+
     action = Ext.create('GeoExt.Action',{
       control: new OpenLayers.Control.DrawFeature(vectorLayer, OpenLayers.Handler.Path),
       tooltip: 'วาดเส้นตรงบนแผนที่',
@@ -235,6 +312,9 @@ Ext.application({
           kml.removeFeatures(kml.features);
           map.removeLayer(kml);
         }
+        if (Ext.getCmp('radii')) {
+          Ext.getCmp('radii').hide();
+        }
       },
       allowDepress: true
     });
@@ -253,7 +333,7 @@ Ext.application({
       img_url += '&sensor=false&key=AIzaSyBa-Aed1-QisFrEs2Vnc0f3hfu_fWgXIl4';
       var html = "<center><img src='" + img_url + "' /></center>";
       Ext.create("Ext.window.Window", {
-        title: "Google Street View",
+        title: "<a href='http://maps.google.com/maps?q=&layer=c&cbll=" + lat + "," + lon + "&cbp=12,0,0,0,0' target='_blank'>Google Street View</a> <font color='red'><b>ท่านสามารถใช้เม้าส์คลิกที่ link ด้านซ้ายมือได้</b></font>",
         width: 450,
         height: 450,
         layout: 'fit',

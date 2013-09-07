@@ -1,5 +1,7 @@
 #!/usr/local/rvm/bin/ruby
-# -*- encoding : utf-8 -*-
+# encoding: UTF-8 
+# coding: UTF-8
+# -*- coding: UTF-8 -*-
 
 require 'cgi'
 require 'rubygems'
@@ -56,7 +58,7 @@ def check_rforest(lon,lat)
     end
   end
   #log("check_rforest-msg: #{msg}")
-  msg 
+  msg
 end
 
 def check_m30forest(lon,lat)
@@ -142,6 +144,7 @@ if layer == 'national_park'
   msg = check_npark(lon,lat)
 elsif layer == 'reserve_forest'
   msg = check_rforest(lon,lat)
+  #msg = "test fixing..."
 elsif layer == 'mangrove_2530'
   msg = check_m30forest(lon,lat)
 elsif layer == 'mangrove_2543'

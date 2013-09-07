@@ -1,0 +1,577 @@
+MAP
+  NAME Thai
+  STATUS ON
+  EXTENT 97.0 5.5 105.7 20.5
+  UNITS dd
+  SIZE 600 400
+  IMAGECOLOR 180 180 180
+  TRANSPARENT ON
+  IMAGETYPE png
+  FONTSET "/ms603/fonts/fonts.txt"
+  #SYMBOLSET "/ms603/symbols/symbols.txt"
+  OUTPUTFORMAT
+    NAME png
+    DRIVER "GD/PNG"
+    MIMETYPE "image/png"
+    IMAGEMODE RGB
+    EXTENSION "png"
+    FORMATOPTION "INTERLACE=OFF"
+  END
+  WEB
+    IMAGEPATH '/wms/tmp/'
+    IMAGEURL "/wms/tmp/"
+    METADATA
+      "wms_title" "DSI WMS"
+      "wms_onlineresource" "http://203.151.201.129/cgi-bin/mapserv?map=/ms603/map/wms-dsi.map&"
+      "wms_srs" "EPSG:4326 EPSG:900913"
+      "wms_enable_request" "*"
+      "labelcache_map_edge_buffer" "40"
+    END
+  END
+  PROJECTION
+    "proj=latlong"
+    "datum=WGS84"
+  END
+  
+  LAYER
+    NAME "npark"
+    METADATA
+      "wms_title" "National Park"
+      "wms_srs" "EPSG:4326 EPSG:900913"
+    END
+    PROJECTION
+      "proj=latlong"
+      "datum=WGS84"
+    END
+    STATUS ON
+    OPACITY 50
+    TYPE POLYGON
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=dsi user=postgres"
+    DATA "the_geom FROM national_park using unique gid using srid=4326"
+    LABELITEM "name_th"
+    CLASS
+      STYLE
+        ANGLE 360
+        COLOR 255 153 0
+        OUTLINECOLOR 135 135 0
+        SYMBOL 0
+      END
+      LABEL
+        TYPE truetype
+        FONT tahoma
+        SIZE 10
+        POSITION uc
+        MINDISTANCE 100
+        ENCODING tis-620
+      END
+    END
+  END
+  
+  LAYER
+    NAME "rforest"
+    METADATA
+      "wms_title" "Reserved Forest"
+      "wms_srs" "EPSG:4326 EPSG:900913"
+    END
+    PROJECTION
+      "proj=latlong"
+      "datum=WGS84"
+    END
+    STATUS ON
+    OPACITY 50
+    TYPE POLYGON
+    CONNECTIONTYPE postgis
+    CONNECTION "host=localhost dbname=dsi user=postgres"
+    DATA "the_geom FROM reserve_forest using unique gid using srid=4326"
+    LABELITEM "name_th"
+    CLASS
+      STYLE
+        ANGLE 360
+        COLOR  51 255 204
+        OUTLINECOLOR 51 153 0
+        SYMBOL 0
+      END
+      LABEL
+        TYPE truetype
+        FONT tahoma
+        SIZE 10
+        POSITION uc
+        MINDISTANCE 100
+        ENCODING tis-620
+      END
+    END
+  END
+  
+  LAYER
+    NAME "uforest"
+    METADATA
+      "wms_title" "Use Forest"
+      "wms_srs" "EPSG:4326 EPSG:900913"
+    END
+    PROJECTION
+      "proj=latlong"
+      "datum=WGS84"
+    END
+    STATUS ON
+    OPACITY 50
+    TYPE POLYGON
+    CONNECTIONTYPE postgis
+    CONNECTION "host=localhost dbname=dsi user=postgres"
+    DATA "the_geom FROM use_forest using unique gid using srid=4326"
+    LABELITEM "forest_n"
+    CLASS
+      STYLE
+        ANGLE 360
+        COLOR  102 51 51
+        OUTLINECOLOR 51 10 10
+        SYMBOL 0
+      END
+      LABEL
+        TYPE truetype
+        FONT tahoma
+        SIZE 10
+        POSITION uc
+        MINDISTANCE 100
+        ENCODING tis-620      
+      END
+    END
+  END
+  
+  LAYER
+    NAME "contour"
+    METADATA
+      "wms_title" "Contour"
+      "wms_srs" "EPSG:4326 EPSG:900913"
+    END
+    PROJECTION
+      "proj=latlong"
+      "datum=WGS84"
+    END
+    STATUS ON
+    OPACITY 50
+    TYPE LINE
+    CONNECTIONTYPE postgis
+    CONNECTION "host=localhost dbname=dsi user=postgres"
+    DATA "the_geom FROM contour using unique gid using srid=4326"
+    CLASS
+      STYLE
+        ANGLE 360
+        COLOR  200 0 0
+        OUTLINECOLOR 20 0 0
+        SYMBOL 0
+      END
+    END
+  END
+  
+  LAYER
+    NAME "testtopo"
+    METADATA
+      "wms_title" "TestTopo"
+      "wms_srs" "EPSG:24047 EPSG:32647 EPSG:900913"
+    END
+    STATUS ON
+    OPACITY 50
+    PROJECTION
+      "init=epsg:24047"
+    END
+    TILEINDEX "/ms603/shp/testtopo.shp"
+    TILEITEM "LOCATION"
+    TYPE RASTER
+  END
+  
+  LAYER
+    NAME "l7018"
+    TYPE RASTER
+    STATUS ON
+    DATA "/ms603/sid/l7018.sid"
+    PROJECTION
+      "init=epsg:32647"
+    END
+    METADATA
+      "wms_title"  "WMS L7018"
+      "wms_onlineresource" "http://203.151.201.129/cgi-bin/mapserv?map=/ms603/map/wms-dsi.map&"
+      "wms_srs" "EPSG:32647 EPSG:900913"
+    END
+  END
+  
+  LAYER
+    NAME "no_02_province"
+    METADATA
+      "wms_title" "No_02 Province"
+      "wms_srs" "EPSG:4326 EPSG:900913"
+    END
+    PROJECTION
+      "proj=latlong"
+      "datum=WGS84"
+    END
+    STATUS ON
+    OPACITY 50
+    TYPE POLYGON
+    CONNECTIONTYPE postgis
+    CONNECTION "host=localhost dbname=dsi user=postgres"
+    PROCESSING "LABEL_NO_CLIP=1"
+    DATA "the_geom FROM no_02_province using unique gid using srid=4326"
+    LABELITEM "prov_nam_t"
+    CLASS
+      STYLE
+        ANGLE 360
+        COLOR 204 255 204
+        OUTLINECOLOR 0 102 0
+        WIDTH 1
+        SYMBOL 0
+      END
+      LABEL
+        TYPE truetype
+        FONT tahoma
+        SIZE 11
+        COLOR 0 102 0
+        OUTLINECOLOR 204 255 204        
+        POSITION uc
+        MINDISTANCE 100
+        ENCODING tis-620
+      END
+    END
+  END
+  
+  LAYER
+    NAME "no_03_amphoe"
+    METADATA
+      "wms_title" "No_03 Amphoe"
+      "wms_srs" "EPSG:4326 EPSG:900913"
+    END
+    PROJECTION
+      "proj=latlong"
+      "datum=WGS84"
+    END
+    STATUS ON
+    OPACITY 50
+    TYPE POLYGON
+    CONNECTIONTYPE postgis
+    CONNECTION "host=localhost dbname=dsi user=postgres"
+    PROCESSING "LABEL_NO_CLIP=1"
+    DATA "the_geom FROM no_03_amphoe using unique gid using srid=4326"
+    #DATA "/ms603/shp/???.shp"
+    LABELITEM "amphoe_t"
+    CLASS
+      STYLE
+        ANGLE 360
+        COLOR 204 255 255
+        OUTLINECOLOR 0 51 204
+        WIDTH 1
+        SYMBOL 0
+      END
+      LABEL
+        TYPE truetype
+        FONT tahoma
+        SIZE 11
+        COLOR  0 51 204
+        OUTLINECOLOR 204 255 255
+        POSITION uc
+        MINDISTANCE 100
+        ENCODING tis-620
+      END
+    END
+  END
+  
+  LAYER
+    NAME "no_04_tambon"
+    METADATA
+      "wms_title" "No_04 Tambon"
+      "wms_srs" "EPSG:4326 EPSG:900913"
+    END
+    PROJECTION
+      "proj=latlong"
+      "datum=WGS84"
+    END
+    STATUS ON
+    OPACITY 50
+    TYPE POLYGON
+    CONNECTIONTYPE postgis
+    CONNECTION "host=localhost dbname=dsi user=postgres"
+    PROCESSING "LABEL_NO_CLIP=1"
+    DATA "the_geom FROM no_04_tambon using unique gid using srid=4326"
+    #DATA "/ms603/shp/???.shp"
+    LABELITEM "tam_nam_t"
+    CLASS
+      STYLE
+        ANGLE 360
+        COLOR 255 255 204
+        OUTLINECOLOR 153 102 0
+        WIDTH 1
+        SYMBOL 0
+      END
+      LABEL
+        TYPE truetype
+        FONT tahoma
+        SIZE 11
+        COLOR 153 102 0
+        OUTLINECOLOR 255 255 204
+        POSITION uc
+        MINDISTANCE 100
+        ENCODING tis-620
+      END
+    END
+  END
+  
+  LAYER
+    NAME "no_06_muban"
+    METADATA
+      "wms_title" "No_06 Muban"
+      "wms_srs" "EPSG:4326 EPSG:900913"
+    END
+    PROJECTION
+      "proj=latlong"
+      "datum=WGS84"
+    END
+    STATUS ON
+    OPACITY 50
+    TYPE POINT
+    CONNECTIONTYPE postgis
+    CONNECTION "host=localhost dbname=dsi user=postgres"
+    DATA "the_geom FROM no_06_muban using unique gid using srid=4326"
+    LABELITEM "muban"
+    CLASS
+      STYLE
+        ANGLE 360
+        COLOR 255 255 255
+        OUTLINECOLOR 255 0 0
+        SYMBOL 0
+      END
+      LABEL
+        TYPE truetype
+        FONT tahoma
+        SIZE 12
+        COLOR 0 255 0
+        OUTLINECOLOR 0 20 0
+        POSITION uc
+        MINDISTANCE 100
+        ENCODING tis-620
+      END
+    END
+  END
+  
+  LAYER
+    NAME "no_13_geology"
+    METADATA
+      "wms_title" "No_13_geology"
+      "wms_srs" "EPSG:4326 EPSG:900913"
+    END
+    PROJECTION
+      "proj=latlong"
+      "datum=WGS84"
+    END
+    STATUS ON
+    OPACITY 50
+    TYPE POLYGON
+    CONNECTIONTYPE postgis
+    CONNECTION "host=localhost dbname=dsi user=postgres"
+    DATA "the_geom FROM no_13_geology using unique gid using srid=4326"
+    LABELITEM "f_name_t"
+    CLASS
+      STYLE
+        ANGLE 360
+        COLOR 255 255 255
+        OUTLINECOLOR 255 0 0
+        SYMBOL 0
+      END
+      LABEL
+        TYPE truetype
+        FONT tahoma
+        SIZE 12
+        COLOR 0 255 0
+        OUTLINECOLOR 0 20 0
+        POSITION uc
+        MINDISTANCE 100
+        ENCODING tis-620
+      END
+    END
+  END
+  
+  LAYER
+    NAME "no_14_mineral"
+    METADATA
+      "wms_title" "No_14_mineral"
+      "wms_srs" "EPSG:4326 EPSG:900913"
+    END
+    PROJECTION
+      "proj=latlong"
+      "datum=WGS84"
+    END
+    STATUS ON
+    OPACITY 50
+    TYPE POLYGON
+    CONNECTIONTYPE postgis
+    CONNECTION "host=localhost dbname=dsi user=postgres"
+    DATA "the_geom FROM no_14_mineral using unique gid using srid=4326"
+    LABELITEM "namethai"
+    CLASS
+      STYLE
+        ANGLE 360
+        COLOR 255 255 255
+        OUTLINECOLOR 255 0 0
+        SYMBOL 0
+      END
+      LABEL
+        TYPE truetype
+        FONT tahoma
+        SIZE 12
+        COLOR 0 255 0
+        OUTLINECOLOR 0 20 0
+        POSITION uc
+        MINDISTANCE 100
+        ENCODING tis-620
+      END
+    END
+  END
+  
+   LAYER
+    NAME "no_22_spk"
+    METADATA
+      "wms_title" "No_22_spk"
+      "wms_srs" "EPSG:4326 EPSG:900913"
+    END
+    PROJECTION
+      "proj=latlong"
+      "datum=WGS84"
+    END
+    STATUS ON
+    OPACITY 50
+    TYPE POLYGON
+    CONNECTIONTYPE postgis
+    CONNECTION "host=localhost dbname=dsi user=postgres"
+    DATA "the_geom FROM no_22_spk using unique gid using srid=4326"
+    LABELITEM "alro_name"
+    CLASS
+      STYLE
+        ANGLE 360
+        COLOR 255 255 255
+        OUTLINECOLOR 255 0 0
+        SYMBOL 0
+      END
+      LABEL
+        TYPE truetype
+        FONT tahoma
+        SIZE 12
+        COLOR 0 255 0
+        OUTLINECOLOR 0 20 0
+        POSITION uc
+        MINDISTANCE 100
+        ENCODING tis-620
+      END
+    END
+  END
+  
+  LAYER
+    NAME "mangrove_2530"
+    METADATA
+      "wms_title" "Mangrove_2530"
+      "wms_srs" "EPSG:4326 EPSG:900913"
+    END
+    PROJECTION
+      "proj=latlong"
+      "datum=WGS84"
+    END
+    STATUS ON
+    OPACITY 50
+    TYPE POLYGON
+    CONNECTIONTYPE postgis
+    CONNECTION "host=localhost dbname=dsi user=postgres"
+    DATA "the_geom FROM mangrove_2530 using unique gid using srid=4326"
+    #LABELITEM "rai"
+    CLASS
+      STYLE
+        ANGLE 360
+        COLOR 255 255 255
+        OUTLINECOLOR 255 0 0
+        SYMBOL 0
+      END
+      LABEL
+        TYPE truetype
+        FONT tahoma
+        SIZE 12
+        COLOR 0 255 0
+        OUTLINECOLOR 0 20 0
+        POSITION uc
+        MINDISTANCE 100
+        ENCODING tis-620
+      END
+    END
+  END
+  
+  LAYER
+    NAME "mangrove_2543"
+    METADATA
+      "wms_title" "Mangrove_2543"
+      "wms_srs" "EPSG:4326 EPSG:900913"
+    END
+    PROJECTION
+      "proj=latlong"
+      "datum=WGS84"
+    END
+    STATUS ON
+    OPACITY 50
+    TYPE POLYGON
+    CONNECTIONTYPE postgis
+    CONNECTION "host=localhost dbname=dsi user=postgres"
+    DATA "the_geom FROM mangrove_2543 using unique gid using srid=4326"
+    LABELITEM "gzone_name"
+    CLASS
+      STYLE
+        ANGLE 360
+        COLOR 255 255 255
+        OUTLINECOLOR 0 255 0
+        SYMBOL 0
+      END
+      LABEL
+        TYPE truetype
+        FONT tahoma
+        SIZE 12
+        COLOR 0 200 0
+        OUTLINECOLOR 0 20 0
+        POSITION uc
+        MINDISTANCE 100
+        ENCODING tis-620
+      END
+    END
+  END
+  
+  LAYER
+    NAME "mangrove_2552"
+    METADATA
+      "wms_title" "Mangrove_2552"
+      "wms_srs" "EPSG:4326 EPSG:900913"
+    END
+    PROJECTION
+      "proj=latlong"
+      "datum=WGS84"
+    END
+    STATUS ON
+    OPACITY 50
+    TYPE POLYGON
+    CONNECTIONTYPE postgis
+    CONNECTION "host=localhost dbname=dsi user=postgres"
+    DATA "the_geom FROM mangrove_2552 using unique gid using srid=4326"
+    LABELITEM "lu52_nam"
+    CLASS
+      STYLE
+        ANGLE 360
+        COLOR 255 255 255
+        OUTLINECOLOR 0 0 255
+        SYMBOL 0
+      END
+      LABEL
+        TYPE truetype
+        FONT tahoma
+        SIZE 12
+        COLOR 0 0 200
+        OUTLINECOLOR 0 0 20
+        POSITION uc
+        MINDISTANCE 100
+        ENCODING tis-620
+      END
+    END
+  END
+END
+  
+

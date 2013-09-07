@@ -222,3 +222,8 @@ div.olLayerGoogleCopyright {
 .draw_number {
   background-image: url("img/icon_draw_number.png") !important;
 }
+
+.add_buffer {
+  background-image: url("img/buffer.png") !important;
+}
+
