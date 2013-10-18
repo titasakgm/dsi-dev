@@ -48,7 +48,7 @@ def get_center(table,gid)
   sql += "FROM #{table} "
   sql += "WHERE gid=#{gid}"
   
-  #log("get_center:sql: #{sql}")
+  log("get_center:sql: #{sql}")
   
   res = con.exec(sql)
   con.close

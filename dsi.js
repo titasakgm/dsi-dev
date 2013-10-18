@@ -214,16 +214,45 @@ Ext.application({
           triggerAction: 'all',
           listeners: {
             select: function(combo, record, index){
+              var style_red = {
+                strokeColor: "#FF0000",
+                fillColor: "#FF7373",
+                fillOpacity: 0.5
+              };
+
+              var style_yellow = {
+                strokeColor: "#FFE400",
+                fillColor: "#FFF073",
+                fillOpacity: 0.5
+              };
+
+              var style_green = {
+                strokeColor: "#2BBE00",
+                fillColor: "#92ED6B",
+                fillOpacity: 0.5
+              };
+
+              var style = style_red;
+
               var radius = record[0].data.value;
               var feature = vectorLayer.features[vectorLayer.features.length - 1];
               if (feature) {
                 var centroid = feature.geometry.getCentroid();
                 var projection = map.getProjectionObject();
-                
                 var sides = 40;
                 var new_geom = OpenLayers.Geometry.Polygon.createGeodesicPolygon(centroid, radius, sides, 45, projection);
+                //var new_feature = new OpenLayers.Feature.Vector(new_geom);
+
+                if (parseInt(radius) < 501) {
+                  style = style_red;
+                } else if (parseInt(radius) < 5001) {
+                  style = style_yellow;
+                } else {
+                  style = style_green;
+                }
                 
-                var new_feature = new OpenLayers.Feature.Vector(new_geom);
+                var new_feature = new OpenLayers.Feature.Vector(new_geom,null,style);
+
                 vectorLayer.addFeatures([new_feature]);
               }
             }            
@@ -333,7 +362,7 @@ Ext.application({
       img_url += '&sensor=false&key=AIzaSyBa-Aed1-QisFrEs2Vnc0f3hfu_fWgXIl4';
       var html = "<center><img src='" + img_url + "' /></center>";
       Ext.create("Ext.window.Window", {
-        title: "<a href='http://maps.google.com/maps?q=&layer=c&cbll=" + lat + "," + lon + "&cbp=12,0,0,0,0' target='_blank'>Google Street View</a> <font color='red'><b>ท่านสามารถใช้เม้าส์คลิกที่ link ด้านซ้ายมือได้</b></font>",
+        title: "<a href='http://maps.google.com/maps?q=&layer=c&cbll=" + lat + "," + lon + "&cbp=12,0,0,0,0&output=svembed' target='_blank'>Google Street View</a> <font color='red'><b>ท่านสามารถใช้เม้าส์คลิกที่ link ด้านซ้ายมือได้</b></font>",
         width: 450,
         height: 450,
         layout: 'fit',
