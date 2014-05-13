@@ -227,3 +227,11 @@ div.olLayerGoogleCopyright {
   background-image: url("img/buffer.png") !important;
 }
 
+.x-btn-inner {
+  margin: 0 !important;
+}
+
+.x-tab-inner {
+  margin: 0 !important;
+}
+

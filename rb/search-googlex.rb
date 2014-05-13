@@ -14,16 +14,16 @@ def log(msg)
   f.close
 end
 
-def create_hili_map(table,gid)
+def create_hili_map(table,gids)
 
   ##### Start create hilimap according to query with exact = 1
   geom = "POLYGON"
-  filter = "gid = #{gid}"
+  filter = "gid in (#{gids.join(',')})"
   if table =~ /muban/
     geom = "POINT"
   end
 
-  #log("filter: #{filter}")
+  log("filter: #{filter}")
   src = open('/ms603/map/search.tpl').readlines
   dst = open('/ms603/map/hili.map','w')
   
@@ -73,23 +73,31 @@ def search_location(query, start, limit, exact)
   if exact == 1
     sql = "SELECT loc_gid,loc_text,loc_table "
     sql += "FROM locations "
-    sql += "WHERE loc_text = '#{query}' LIMIT 1"
+
+    if query =~ /^จ./
+      sql += "WHERE loc_text = '#{query}' "
+    else
+      sql += "WHERE loc_text = '#{query}' LIMIT 1"
+    end
+
     res = con.exec(sql)
 
+    gids = []
     gid = 0
     text = nil
     table = nil
     res.each do |rec|
       gid = rec['loc_gid']
+      gids.push(gid)
       text = rec['loc_text']
       table = rec['loc_table']
     end
   
-    lonlat = get_center(table,gid)
+    lonlat = get_center(table,gids[0])
     lon = lonlat[0]
     lat = lonlat[1]  
   
-    create_hili_map(table,gid)
+    create_hili_map(table,gids)
   
     return_data = Hash.new
     return_data[:success] = true
@@ -172,20 +180,22 @@ def search_location(query, start, limit, exact)
     #log("sql:found=1: #{sql}")
 
     res = con.exec(sql)
+    gids = []
     gid = 0
     text = nil
     table = nil
     res.each do |rec|
       gid = rec['loc_gid']
+      gids.push(gid)
       text = rec['loc_text']
       table = rec['loc_table']
     end
   
-    lonlat = get_center(table,gid)
+    lonlat = get_center(table,gids[0])
     lon = lonlat[0]
     lat = lonlat[1]  
   
-    create_hili_map(table,gid)
+    create_hili_map(table,gids)
   
     return_data = Hash.new
     return_data[:success] = true
