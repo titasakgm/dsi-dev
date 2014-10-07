@@ -18,12 +18,12 @@ AutoSizeFramedCloud = OpenLayers.Class(OpenLayers.Popup.FramedCloud, {
 });
 
 AutoSizeFramedCloudMinSize = OpenLayers.Class(OpenLayers.Popup.FramedCloud, {
-  'autoSize': true, 
+  'autoSize': true,
   'minSize': new OpenLayers.Size(400,400)
 });
 
 AutoSizeFramedCloudMaxSize = OpenLayers.Class(OpenLayers.Popup.FramedCloud, {
-  'autoSize': true, 
+  'autoSize': true,
   'maxSize': new OpenLayers.Size(100,100)
 });
 
@@ -150,24 +150,24 @@ create_styles = function() {
   });
 }
 
-create_layer_vectorLayer = function() { 
+create_layer_vectorLayer = function() {
   vectorLayer = new OpenLayers.Layer.Vector("vectorLayer", {
     displayInLayerSwitcher: true
     ,hideIntree: true
     ,styleMap: styles
   });
-  
+
   // Add Popup: create popup on "featureselected" 05/08/2012
   vectorLayer.events.on({
     featureselected: function(e) {
       var chk = Ext.getCmp('id_select_feat').pressed;
       if (chk == false)
         return false;
-      else 
+      else
         create_popup_vectorLayer(e.feature);
     }
   });
-  
+
   // Add Popup: create select feature control 05/08/2012
   frm_input_ctrl = new OpenLayers.Control.SelectFeature(vectorLayer);
 
@@ -175,10 +175,10 @@ create_layer_vectorLayer = function() {
     // convert from merc(900913) to gcs(4326)
     var feat = feature.clone();
     feat.geometry.transform(merc, gcs);
-    
+
     var curr_loc = feat.geometry.toString();
     Ext.getCmp('id_location').setValue(curr_loc);
-    
+
     if (!popup_vectorLayer) {
       popup_vectorLayer = Ext.create('GeoExt.window.Popup', {
         title: 'DSI Popup'
@@ -275,7 +275,7 @@ create_layer_vectorLayer = function() {
         },{
           xtype : 'combo'
           ,fieldLabel : 'Select Layer'
-          ,id: 'id_icon'          
+          ,id: 'id_icon'
           ,listConfig: {
             getInnerTpl: function() {
               // here you place the images in your combo
@@ -321,7 +321,7 @@ create_layer_vectorLayer = function() {
           ,width: '100%'
           ,anchor: '100%'
         }]
-      },{        
+      },{
         xtype: 'form'
         ,title:'Upload Photo'
         ,width: 500
@@ -370,7 +370,7 @@ create_layer_vectorLayer = function() {
                 ,waitMsg: 'Uploading photo...'
                 //,success: function(response, opts) { NOT WORKING ?!?!?
                 ,success: function(fp, o) {
-                  var data = Ext.decode(o.response.responseText);  
+                  var data = Ext.decode(o.response.responseText);
                   var imgname = data.imgname;
                   var origname = data.origname;
                   Ext.getCmp('id_imgname').setValue(imgname);
@@ -426,7 +426,7 @@ create_layer_vectorLayer = function() {
                 map.addLayer(pointLayer);
                 frm_input_ctrl.deactivate();
               }
-            });        
+            });
           }
           ,failure: function(f,a) {
             Ext.Msg.alert('Error', 'Failed!!');
@@ -471,7 +471,7 @@ create_layer_pointLayer = function() {
                   ,'backgroundWidth': 32
                   ,'backgroundHeight': 32
                   ,'backgroundYOffset': -32
-                }                  
+                }
     ,'layer_x1': {
                   'backgroundGraphic': 'img/x1.png'
                   ,'backgroundWidth': 27
@@ -525,7 +525,7 @@ create_layer_pointLayer = function() {
                   ,'backgroundWidth': 27
                   ,'backgroundHeight': 27
                   ,'backgroundYOffset': -27
-                }                
+                }
 
   };
   v_style_map.addUniqueValueRules('default','kmlname',sym_lookup);
@@ -545,7 +545,7 @@ create_layer_pointLayer = function() {
                 })
     ,styleMap: v_style_map
   });
- 
+
   // Add popup when feature in pointLayer is clicked
   ctrl_popup_pointLayer = new OpenLayers.Control.SelectFeature(pointLayer, {
     hover: true
@@ -560,21 +560,21 @@ create_layer_pointLayer = function() {
   });
   map.addControl(ctrl_popup_pointLayer);
   ctrl_popup_pointLayer.activate();
-  
+
   function onPointFeatureSelect(feat){
     // Open framedCloud popup on feat
     sel_feat = feat;
     var lon = feat.feature.geometry.x;
     var lat = feat.feature.geometry.y;
     var lonlat = new OpenLayers.LonLat(lon,lat); // This is merc already!
-    
+
     feature = feat.feature;
     var id = feature.attributes.id;
     var name = feature.attributes.name;
     var img = feature.attributes.imgname;
     var imgurl = "./photos/" + feature.attributes.imgname;
     var descr = feature.attributes.descr;
-    
+
     // Will be displayed in popup on click at feature
     content = "<h2>" + name + "(id:" + id + ")</h2>";
     if (img) {
@@ -588,7 +588,7 @@ create_layer_pointLayer = function() {
             content,
             null, true, onPointPopupClose);
     feature.popup = popup_pointLayer;
-    
+
     // Force the popup to always open to the top-right
     popup_pointLayer.calculateRelativePosition = function() {
         return 'tr';
@@ -604,7 +604,7 @@ create_layer_pointLayer = function() {
       delete feature.popup;
     }
   }
-  
+
   function onPointPopupClose(evt) {
     ctrl_popup_pointLayer.unselectAll();
   }
@@ -613,12 +613,12 @@ create_layer_pointLayer = function() {
   var deleteFromDatabase = function(feature){
     var id = feature.attributes.id;
     var name = feature.attributes.name;
-    
+
     Ext.Ajax.request({
       url: 'rb/kml_delete.rb'
       ,params: { id: id }
       ,success: function(resp,opt) {
-        info('Result', 'ลบรายการ ' + name + ' ออกจากฐานข้อมูลเรียบร้อยแล้ว');            
+        info('Result', 'ลบรายการ ' + name + ' ออกจากฐานข้อมูลเรียบร้อยแล้ว');
       }
       ,failure: function(resp, opt) {
         Ext.Msg.alert('Warning', 'เกิดข้อผิดพลาดไม่สามารถลบรายการที่ต้องการได้');
@@ -648,7 +648,7 @@ create_layer_pointLayer = function() {
     ,multiple: false
     ,hover: false
   };
-  
+
   del_feat_ctrl = new OpenLayers.Control.SelectFeature(pointLayer, removeOptions);
   map.addControl(del_feat_ctrl);
   // del_feat_ctrl is not activated yet
@@ -682,7 +682,7 @@ create_layer_hili = function() {
 create_layer_kml = function(kmlname) {
   if (kml)
     kml = null;
-    
+
   kml = new OpenLayers.Layer.Vector("KML", {
     projection: map.displayProjection
     ,strategies: [new OpenLayers.Strategy.Fixed()]
@@ -697,18 +697,18 @@ create_layer_kml = function(kmlname) {
     })
   });
   map.addLayer(kml);
-  
-  
-  
-  
-  select_kml = new OpenLayers.Control.SelectFeature(kml);            
+
+
+
+
+  select_kml = new OpenLayers.Control.SelectFeature(kml);
   kml.events.on({
       "featureselected": onFeatureSelectKml,
       "featureunselected": onFeatureUnselectKml
   });
 
   map.addControl(select_kml);
-  select_kml.activate();  
+  select_kml.activate();
 
  function onPopupKmlClose(evt) {
             select_kml.unselectAll();
@@ -721,10 +721,10 @@ create_layer_kml = function(kmlname) {
             if (content.search("<script") != -1) {
                 content = "Content contained Javascript! Escaped content below.<br>" + content.replace(/</g, "&lt;");
             }
-            
-            popupClass = AutoSizeFramedCloud;            
-            
-            popup = new OpenLayers.Popup.FramedCloud("chicken", 
+
+            popupClass = AutoSizeFramedCloud;
+
+            popup = new OpenLayers.Popup.FramedCloud("chicken",
               feature.geometry.getBounds().getCenterLonLat(),
               new OpenLayers.Size(100,100),
               content,
@@ -807,17 +807,17 @@ function addMarkers() {
   //anchored bubble popup wide short text contents autosize closebox
   ll = new OpenLayers.LonLat(13, 100);
   popupClass = AutoSizeFramedCloud;
-  popupContentHTML = '<div style="background-color:red;">Popup.FramedCloud<br>autosize - wide short text<br>closebox<br>' + samplePopupContentsHTML_WideShort + '</div>' 
+  popupContentHTML = '<div style="background-color:red;">Popup.FramedCloud<br>autosize - wide short text<br>closebox<br>' + samplePopupContentsHTML_WideShort + '</div>'
   addMarker(ll, popupClass, popupContentHTML, true);
 }
 
 function addMarker(ll, popupClass, popupContentHTML, closeBox, overflow) {
-  var feature = new OpenLayers.Feature(markers, ll); 
+  var feature = new OpenLayers.Feature(markers, ll);
   feature.closeBox = closeBox;
   feature.popupClass = popupClass;
   feature.data.popupContentHTML = popupContentHTML;
   feature.data.overflow = (overflow) ? "auto" : "hidden";
-            
+
   marker = feature.createMarker();
 
   var markerClick = function (evt) {
@@ -834,7 +834,7 @@ function addMarker(ll, popupClass, popupContentHTML, closeBox, overflow) {
   marker.events.register("mousedown", feature, markerClick);
 
   markers.addMarker(marker);
-}        
+}
 
 function onFeatureSelect(feature) {
   selectedFeature = feature;
@@ -875,17 +875,17 @@ var test_gps = function() {
 }
 
 var check_gps = function(){
-  var lodd = Ext.getCmp('londd').getValue();        
-  var lomm = Ext.getCmp('lonmm').getValue();        
-  var loss = Ext.getCmp('lonss').getValue();        
-  var ladd = Ext.getCmp('latdd').getValue();        
-  var lamm = Ext.getCmp('latmm').getValue();        
-  var lass = Ext.getCmp('latss').getValue();        
-  
+  var lodd = Ext.getCmp('londd').getValue();
+  var lomm = Ext.getCmp('lonmm').getValue();
+  var loss = Ext.getCmp('lonss').getValue();
+  var ladd = Ext.getCmp('latdd').getValue();
+  var lamm = Ext.getCmp('latmm').getValue();
+  var lass = Ext.getCmp('latss').getValue();
+
   report(lodd,lomm,loss,ladd,lamm,lass);
 }
 
-var report = function(lodd,lomm,loss,ladd,lamm,lass) {  
+var report = function(lodd,lomm,loss,ladd,lamm,lass) {
   Ext.Ajax.request({
     url: 'rb/checkLonLat2.rb'
     ,params: {
@@ -900,7 +900,7 @@ var report = function(lodd,lomm,loss,ladd,lamm,lass) {
     }
     ,failure: function(response, opts){
       alert("checkLonLat2 > failure");
-      return false;            
+      return false;
     }
     ,success: function(response, opts){
       // var data = eval( '(' + response.responseText + ')' );
@@ -924,7 +924,7 @@ var report = function(lodd,lomm,loss,ladd,lamm,lass) {
 };
 
 var gps = Ext.create("Ext.form.Panel",{
-  title: 'ตำแหน่งพิกัด GPS'
+  title: 'ตำแหน่งพิกัด GPS (Geographic)'
   ,id: 'id_gps'
   ,frame: true
   ,items: [{
@@ -1022,7 +1022,7 @@ var gps = Ext.create("Ext.form.Panel",{
       ,handler: test_gps
       ,width: 80
     }]
-  }]    
+  }]
 });
 
 //////////////////////////////////////////////
@@ -1094,17 +1094,17 @@ function addMarkers() {
   //anchored bubble popup wide short text contents autosize closebox
   ll = new OpenLayers.LonLat(13, 100);
   popupClass = AutoSizeFramedCloud;
-  popupContentHTML = '<div style="background-color:red;">Popup.FramedCloud<br>autosize - wide short text<br>closebox<br>' + samplePopupContentsHTML_WideShort + '</div>' 
+  popupContentHTML = '<div style="background-color:red;">Popup.FramedCloud<br>autosize - wide short text<br>closebox<br>' + samplePopupContentsHTML_WideShort + '</div>'
   addMarker(ll, popupClass, popupContentHTML, true);
 }
 
 function addMarker(ll, popupClass, popupContentHTML, closeBox, overflow) {
-  var feature = new OpenLayers.Feature(markers, ll); 
+  var feature = new OpenLayers.Feature(markers, ll);
   feature.closeBox = closeBox;
   feature.popupClass = popupClass;
   feature.data.popupContentHTML = popupContentHTML;
   feature.data.overflow = (overflow) ? "auto" : "hidden";
-            
+
   marker = feature.createMarker();
 
   var markerClick = function (evt) {
@@ -1121,7 +1121,7 @@ function addMarker(ll, popupClass, popupContentHTML, closeBox, overflow) {
   marker.events.register("mousedown", feature, markerClick);
 
   markers.addMarker(marker);
-}        
+}
 
 function onFeatureSelect(feature) {
   selectedFeature = feature;
@@ -1182,7 +1182,7 @@ var test_gps2 = function() {
     gps_test_lon = "100DD 33MM 56.808SS";
     gps_test_lat = "13DD 53MM 26.592SS";
   }
-  
+
   Ext.getCmp('gps_lon').setValue(gps_test_lon);
   Ext.getCmp('gps_lat').setValue(gps_test_lat);
 }
@@ -1197,20 +1197,20 @@ String.prototype.strip = function() { return this.replace(/^\s+|\s+$/g, ''); }
 //"  1    2    3   ".replace(/\s+/g, ' ').strip().split(/\s/g)
 //["1", "2", "3"]
 
-//Remove non-digits from string BUT left out decimal . 
+//Remove non-digits from string BUT left out decimal .
 //str.replace(/[A-Za-z$-]/g, "");
 
 var gps_msg;
 
 var check_gps2 = function(){
-  var gps_lon = Ext.getCmp('gps_lon').getValue();        
-  var gps_lat = Ext.getCmp('gps_lat').getValue();        
+  var gps_lon = Ext.getCmp('gps_lon').getValue();
+  var gps_lat = Ext.getCmp('gps_lat').getValue();
   var lon,lat;
-  
+
   //Reformat gps_lon and gps_lat
   var lon_arr = gps_lon.replace(/\s+/g, ' ').strip().replace(/[A-Za-z$-]/g, "").split(/\s/g);
   var lat_arr = gps_lat.replace(/\s+/g, ' ').strip().replace(/[A-Za-z$-]/g, "").split(/\s/g);
-  
+
   if (lon_arr.length == 1 && lat_arr.length == 1) //Decimal Degree
   {
     lon = lon_arr[0];
@@ -1232,7 +1232,7 @@ var check_gps2 = function(){
   gps_report(lon,lat);
 }
 
-var gps_report = function(lon,lat) {  
+var gps_report = function(lon,lat) {
   Ext.Ajax.request({
     url: 'rb/checkLonLatDD.rb'
     ,params: {
@@ -1243,7 +1243,7 @@ var gps_report = function(lon,lat) {
     }
     ,failure: function(response, opts){
       alert("checkLonLatDD > failure");
-      return false;            
+      return false;
     }
     ,success: function(response, opts){
       // var data = eval( '(' + response.responseText + ')' );
@@ -1253,7 +1253,7 @@ var gps_report = function(lon,lat) {
       var lat = parseFloat(data.lat);
       var msg = data.msg;
       gps_msg += msg;
-      
+
       var p1 = new OpenLayers.LonLat(lon,lat);
       var p2 = p1.transform(gcs,merc);
       map.setCenter(p2, 14);
@@ -1343,7 +1343,7 @@ var gps2 = Ext.create("Ext.form.Panel",{
     },{
       xtype: 'button'
       ,text: 'Test'
-      ,tooltip: gps_tip      
+      ,tooltip: gps_tip
       ,handler: test_gps2
       ,width: 80
     }]
@@ -1353,7 +1353,7 @@ var gps2 = Ext.create("Ext.form.Panel",{
     ,items: [{
       html: '<center><font color="green">Click ที่ปุ่ม [Test]<br>เพื่อเปลี่ยนรูปแบบของ GPS<br>ที่สามารถใช้งานได้</font></center>'
     }]
-  }]    
+  }]
 });
 
 //////////////////////////////////////////////
@@ -1383,7 +1383,7 @@ var report_utm = function(utmn, utme, zone) {
     }
     ,failure: function(response, opts){
       alert("checkUTM > failure");
-      return false;            
+      return false;
     }
     ,success: function(response, opts){
       var data = Ext.decode(response.responseText);
@@ -1407,7 +1407,7 @@ var report_utm = function(utmn, utme, zone) {
 var test_gps_utm = function(){
   if (Ext.getCmp('zone47').checked) {
     Ext.getCmp('utmn').setValue(1536195.1807);
-    Ext.getCmp('utme').setValue(669189.2284);    
+    Ext.getCmp('utme').setValue(669189.2284);
   } else {
     Ext.getCmp('utmn').setValue(1540101.0761);
     Ext.getCmp('utme').setValue(20494.2993);
@@ -1417,7 +1417,7 @@ var test_gps_utm = function(){
 var gps_utm = Ext.create("Ext.form.Panel", {
   id: 'id_gps_utm'
   ,frame: true
-  ,title: 'ตำแหน่งพิกัด GPS (UTM)'
+  ,title: 'ตำแหน่งพิกัด GPS (UTM WGS 1984)'
   ,items: [{
     xtype: 'fieldcontainer'
     ,hideLabel: true
@@ -1547,7 +1547,7 @@ var report_utm = function(utmn, utme, zone) {
     }
     ,failure: function(response, opts){
       alert('checkUTM > failure');
-      return false;            
+      return false;
     }
     ,success: function(response, opts){
       var data = Ext.decode(response.responseText);
@@ -1619,10 +1619,10 @@ var report_utm_indian = function(utmni, utmei, zonei) {
 var test_gps_utm_indian = function(){
   if (Ext.getCmp('zone47i').checked) {
     Ext.getCmp('utmni').setValue(1535891.7973);
-    Ext.getCmp('utmei').setValue(669523.2828);    
+    Ext.getCmp('utmei').setValue(669523.2828);
   } else {
     Ext.getCmp('utmni').setValue(1539787.7522);
-    Ext.getCmp('utmei').setValue(20913.1788);    
+    Ext.getCmp('utmei').setValue(20913.1788);
   }
 }
 
@@ -1742,7 +1742,7 @@ var gps_utm_indian = Ext.create("Ext.form.Panel",{
 //////////////////////////////////////////////
 
 var search_query = function(){
-  var query = Ext.getCmp('id_query').getValue();        
+  var query = Ext.getCmp('id_query').getValue();
   search(query);
 }
 
@@ -1800,13 +1800,13 @@ var search = function(query) {
 };
 
 function addWKT(table, gid){
-  var url = "rb/getPolygonWKT.rb?table=" + table + "&gid=" + gid;   
+  var url = "rb/getPolygonWKT.rb?table=" + table + "&gid=" + gid;
   OpenLayers.loadURL(url, '', this, function(response) {
     geom = response.responseText;
     addWKTFeatures(geom);
   });
 }
- 
+
 function addWKTFeatures(wktString){
   wkt = new OpenLayers.Format.WKT();
   features = wkt.read(wktString);
@@ -1923,9 +1923,9 @@ var loadxls = Ext.create("Ext.form.Panel",{
           ,waitMsg: 'Uploading XLS...'
           //,success: function(response, opts) { NOT WORKING ?!?!?
           ,success: function(fp, o) {
-            var data = Ext.decode(o.response.responseText);  
+            var data = Ext.decode(o.response.responseText);
             var kmlname = data.kmlname;
-            create_layer_kml(kmlname);                       
+            create_layer_kml(kmlname);
           }
         })
       }
@@ -1946,7 +1946,7 @@ function numberWithCommas(x) {
   return x;
 }
 
-var check_forest_info = function(layer,ll) {    
+var check_forest_info = function(layer,ll) {
   lon = ll.lon;
   lat = ll.lat;
 
@@ -1975,7 +1975,7 @@ var check_forest_info = function(layer,ll) {
       var lon = data.lon;
       var lat = data.lat;
       var msg = data.msg;
-  
+
       var p1 = new OpenLayers.LonLat(lon,lat);
       var p2 = p1.transform(gcs,merc);
 
@@ -1985,6 +1985,6 @@ var check_forest_info = function(layer,ll) {
     ,failure: function(response, opts){
       alert('check forest info > failure');
       return false;
-    }    
+    }
   });
 };
