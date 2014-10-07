@@ -586,7 +586,36 @@ Ext.application({
       disabled: true
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
+
     toolbarItems.push("->");
+
+    counterlabel = {
+      xtype: 'label',
+      text: 'Visit No:',
+      style:
+      {
+        'font-weight':'bold',
+        'labelAlign':'right',
+        'color': 'blue'
+      }
+    };
+    toolbarItems.push(counterlabel);
+
+    counter = {
+      id: 'counterBtn',
+      xtype: 'image',
+      src: 'http://c.statcounter.com/10066666/0/b98a074a/0/',
+      width: 75,
+      height: 14,
+      listeners: {
+        render: function(c){
+          c.getEl().on('click', function(e){
+            window.open('http://statcounter.com/p10066666/?guest=1','_blank');
+          }, c);
+        }
+      }
+    };
+    toolbarItems.push(counter);
 
     // Add print Preview + Print Action ( Create PDF ERROR!!! )
     var printDialog, printProvider;
@@ -600,6 +629,7 @@ Ext.application({
         comment: "This demo shows how to use GeoExt.PrintMapPanel"
       }
     });
+
     var btn_print = new Ext.Button({
       iconCls: 'print_preview',
       tooltip: 'ดูภาพ Preview และพิมพ์แผนที่ (กรุณา Zoom แผนที่ตามความต้องการอีกครั้ง)',
@@ -866,6 +896,17 @@ Ext.application({
         //children: tree_child
       }
     });
+
+    ///////////////////////////////////
+    // STAT
+    ///////////////////////////////////
+    stat = Ext.create("Ext.Panel", {
+      border: true,
+      title: 'สถิติการเข้าชม',
+      width: 250,
+      html: "<a href='http://statcounter.com/p10066666/?guest=1' target='_blank'><img class='statcounter' src='http://c.statcounter.com/10066666/0/b98a074a/0/' alt='shopify site analytics'></a>"
+    })
+
 
     ///////////////////////////////////
     // TREE
