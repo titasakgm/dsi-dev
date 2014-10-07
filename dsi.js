@@ -11,11 +11,11 @@ Ext.require([
   'GeoExt.tree.Column',
   'GeoExt.ux.GoogleEarthPanel',
   'GeoExt.ux.GoogleEarthClick',
-  
+
   // Add print Preview + Create PDF 05/08/2012
   'GeoExt.data.MapfishPrintProvider',
   'GeoExt.panel.PrintMap',
-  
+
   // Add popup + Input Form 05/08/2012
   'GeoExt.window.Popup',
   'Ext.form.Panel',
@@ -26,7 +26,7 @@ Ext.require([
   'Ext.form.field.ComboBox',
   'Ext.form.field.Date',
   'Ext.form.field.HtmlEditor',
-  
+
   // Add kml store
   'GeoExt.data.FeatureStore',
   'GeoExt.data.proxy.Protocol'
@@ -39,14 +39,14 @@ Ext.application({
     // DSI location
     var center = new OpenLayers.LonLat(100.5657899,13.89071588);
     var dsi = center.transform(gcs,merc);
-       
+
     var ctrl = new OpenLayers.Control.NavigationHistory();
     // Add Bing Map
     // API key for http://203.151.201.129/dsi
     var apiKey = "AnXErkelqCPb0UC5K-lCookgNa4-IwF1Cehgg9En9wcFz7iGblBxbZfm4484_qqK";
-    
+
     OpenLayers.ProxyHost = "/cgi-bin/proxy.cgi?url=";
-    
+
     map = new OpenLayers.Map({
       projection: new OpenLayers.Projection("EPSG:900913"),
       displayProjection: new OpenLayers.Projection("EPSG:4326"),
@@ -63,7 +63,7 @@ Ext.application({
         ctrl
       ]
     });
-    
+
     map.events.register("click", map, function(e){
       var lonlat = map.getLonLatFromViewPortPx(e.xy).transform(merc, gcs);
       var activelayers = map.getLayersBy("visibility", true);
@@ -72,7 +72,7 @@ Ext.application({
         check_forest_info(activelayers[i].name, lonlat);
       }
     });
-  
+
     map.events.register('changelayer', null, function(evt){
       if (evt.layer.name == 'Google Earth') {
       var o = Ext.getCmp('id_east');
@@ -82,18 +82,18 @@ Ext.application({
         o.collapse();
       }
     });
-    
+
     // Create all objects declared in map_utils.js
     create_styles();
     create_layer_vectorLayer();
     create_layer_markers();
     create_layer_hili();
-    
+
     //should WAIT until user click Add Custom Layer
     //create_layer_pointLayer();
 
     var toolbarItems = [], action;
-    
+
     action = Ext.create('GeoExt.Action',{
       tooltip: 'กลับสู่แผนที่เริ่มต้น',
       iconCls: 'zoomfull',
@@ -103,7 +103,7 @@ Ext.application({
       allowDepress: false
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
-    
+
     // Add my_location
     action = Ext.create('GeoExt.Action',{
       tooltip: 'ไปยังตำแหน่งปัจจุบัน',
@@ -140,9 +140,9 @@ Ext.application({
       allowDepress: false
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
-    
+
     toolbarItems.push("-");
-                     
+
     action = Ext.create('GeoExt.Action',{
       control: new OpenLayers.Control.ZoomBox(),
       tooltip: 'ขยายขนาดภาพแผนที่ (กดปุ่ม Shift ค้างไว้จากนั้น Click Mouse ปุ่มซ้ายมือค้างไว้แล้วลากเป็นกรอบสี่เหลี่ยมได้)',
@@ -151,7 +151,7 @@ Ext.application({
       toggleGroup: 'map'
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
-       
+
     action = Ext.create('GeoExt.Action',{
       control: new OpenLayers.Control.ZoomBox({
         out: true
@@ -162,7 +162,7 @@ Ext.application({
       toggleGroup: 'map'
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
-       
+
     action = Ext.create('GeoExt.Action',{
       control: new OpenLayers.Control.DragPan({
         isDefault: true
@@ -174,7 +174,7 @@ Ext.application({
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
     toolbarItems.push("-");
-    
+
     action = Ext.create('GeoExt.Action',{
       control: new OpenLayers.Control.DrawFeature(vectorLayer, OpenLayers.Handler.Point),
       tooltip: 'วางจุดบนแผนที่',
@@ -250,12 +250,12 @@ Ext.application({
                 } else {
                   style = style_green;
                 }
-                
+
                 var new_feature = new OpenLayers.Feature.Vector(new_geom,null,style);
 
                 vectorLayer.addFeatures([new_feature]);
               }
-            }            
+            }
           }
         }]
       });
@@ -269,7 +269,7 @@ Ext.application({
         hover: false,
         eventListeners: {
           featurehighlighted: function() {
-            showWin(map, vectorLayer);            
+            showWin(map, vectorLayer);
           },
           featureunhighlighted: function() {
             Ext.getCmp('radii').hide();
@@ -298,7 +298,7 @@ Ext.application({
       toggleGroup: 'map'
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
-    
+
     action = Ext.create('GeoExt.Action',{
       control: new OpenLayers.Control.DrawFeature(vectorLayer, OpenLayers.Handler.Polygon),
       tooltip: 'วาดรูปหลายเหลี่ยมบนแผนที่',
@@ -308,7 +308,7 @@ Ext.application({
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
     toolbarItems.push("-");
-    
+
     action = Ext.create('GeoExt.Action',{
       control: new OpenLayers.Control.ModifyFeature(vectorLayer),
       tooltip: 'แก้ไขจุดที่ปรากฏบนแผนที่ (ต้อง Click Mouse บนจุด/เส้น/รูปหลายเหลี่ยม เพื่อกำหนดสิ่งที่ต้องการก่อนทำการแก้ไข)',
@@ -317,7 +317,7 @@ Ext.application({
       toggleGroup: 'map'
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
-    
+
     action = Ext.create('GeoExt.Action', {
       control: new OpenLayers.Control.DeleteFeature(vectorLayer),
       tooltip: "ลบทีละรายการ จุด/เส้น/รูปหลายเหลี่ยม",
@@ -326,7 +326,7 @@ Ext.application({
       toggleGroup: "map",
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
-    
+
     // Remove all features replace with DeleteFeature.js (1 at a time)
     action = Ext.create('GeoExt.Action',{
       control: new OpenLayers.Control.SelectFeature(vectorLayer),
@@ -348,8 +348,8 @@ Ext.application({
       allowDepress: true
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
-    
-    toolbarItems.push("-");  
+
+    toolbarItems.push("-");
 
     var show_gsv = function(feat) {
       lon = feat.geometry.x;
@@ -370,7 +370,7 @@ Ext.application({
         html: html
       }).show();
     }
-            
+
     // Add Google Street View Control
     action = Ext.create('GeoExt.Action',{
       control: new OpenLayers.Control.DrawFeature(vectorLayer, OpenLayers.Handler.Point, { 'featureAdded': show_gsv}),
@@ -427,7 +427,7 @@ Ext.application({
       }
     });
     toolbarItems.push(btn_custom_layer);
- 
+
     // Add button to delete a feature from pointLayer and kml table in dsi database
     var btn_del_feat = new Ext.Button({
       iconCls: 'del_feature_in_layer'
@@ -453,12 +453,12 @@ Ext.application({
     ctrl_measure_length = new OpenLayers.Control.Measure(OpenLayers.Handler.Path, {
       persist: true
       ,geodesic: true
-      ,displaySystem: 'metric'      
+      ,displaySystem: 'metric'
       ,eventListeners: {
         measure: function(evt) {
           //evt.units --> 'km' , 'm'
           var unit = (evt.units == 'km') ? 'กิโลเมตร' : 'เมตร';
-          
+
           Ext.Msg.show({
             title: 'Result'
             ,msg: "ระยะทางรวม ประมาณ " + numberWithCommas(evt.measure.toFixed(2)) + ' ' + unit
@@ -469,7 +469,7 @@ Ext.application({
       }
     });
     map.addControl(ctrl_measure_length);
-    
+
     var btn_measure_length = new Ext.Button({
       iconCls: 'measure_length',
       tooltip: "วัดระยะทาง",
@@ -486,14 +486,14 @@ Ext.application({
       pressed: false
     });
     toolbarItems.push(btn_measure_length);
-    
+
     // Measure Area control
     ctrl_measure_area = new OpenLayers.Control.Measure(OpenLayers.Handler.Polygon, {
       eventListeners: {
         measure: function(evt) {
           //evt.units --> 'km' , 'm'
           var unit = (evt.units == 'km') ? 'ตารางกิโลเมตร' : 'ตารางเมตร';
-          
+
           Ext.Msg.show({
             title: 'Result'
             ,msg: "พื้นที่รวม ประมาณ " + numberWithCommas(evt.measure.toFixed(2)) + ' ' + unit
@@ -504,7 +504,7 @@ Ext.application({
       }
     });
     map.addControl(ctrl_measure_area);
-    
+
     var btn_measure_area = new Ext.Button({
       iconCls: 'measure_area',
       tooltip: "คำนวณพื้นที่",
@@ -522,7 +522,7 @@ Ext.application({
       pressed: false
     });
     toolbarItems.push(btn_measure_area);
-    
+
     // Add Lat/Long Button
     var llgrid = null;
     button = Ext.create('Ext.Button',{
@@ -554,7 +554,7 @@ Ext.application({
       }
     });
     toolbarItems.push(button);
-    
+
     // Add UTM Button
     button = Ext.create('Ext.Button',{
       tooltip: 'แสดง UTM Grid',
@@ -568,9 +568,9 @@ Ext.application({
       }
     });
     toolbarItems.push(button);
-    
+
     toolbarItems.push("-");
-        
+
     action = Ext.create('GeoExt.Action',{
        tooltip: "Previous view",
        control: ctrl.previous,
@@ -578,7 +578,7 @@ Ext.application({
        disabled: true
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
-    
+
     action = Ext.create('GeoExt.Action',{
       tooltip: "Next view",
       control: ctrl.next,
@@ -587,10 +587,10 @@ Ext.application({
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
     toolbarItems.push("->");
-    
+
     // Add print Preview + Print Action ( Create PDF ERROR!!! )
     var printDialog, printProvider;
-    
+
     // The PrintProvider that connects us to the print service
     printProvider = Ext.create('GeoExt.data.MapfishPrintProvider', {
       method: "GET", // "POST" recommended for production use
@@ -639,10 +639,10 @@ Ext.application({
       }
     });
     toolbarItems.push(btn_print);
-  
+
     var numicon = new Ext.form.ComboBox({
       width: 55
-      ,id: 'id_icon_num'          
+      ,id: 'id_icon_num'
       ,emptyText: 'Icon'
       ,listConfig: {
         getInnerTpl: function() {
@@ -666,9 +666,9 @@ Ext.application({
       ,handler: function() {
         pointLayer.styleMap = styleMapNumber;
       }
-    });    
+    });
     //toolbarItems.push(numicon);
-    
+
     var utmgrid = new OpenLayers.Layer.WMS(
       "UTM Grid",
       "http://203.151.201.129/cgi-bin/mapserv",
@@ -794,9 +794,9 @@ Ext.application({
           {map: '/ms603/map/wms-dsi.map', layers: 'contour', transparent: true},
           {isBaseLayer: false,visibility: false, iconCls: 'dem'}
         ),
-        
+
         bing_road, bing_hybrid, bing_aerial,
-        
+
         new OpenLayers.Layer.Google(
           "Google Hybrid",
           {type: google.maps.MapTypeId.HYBRID, numZoomLevels: 20,sphericalMercator: true, iconCls: 'google' }
@@ -805,9 +805,9 @@ Ext.application({
           "Google Physical",
           {type: google.maps.MapTypeId.TERRAIN,sphericalMercator: true, iconCls: 'google' }
         ),
-        
+
         utmgrid,
-  
+
        /*
         new OpenLayers.Layer.Yahoo(
           "Yahoo Street",
@@ -822,11 +822,11 @@ Ext.application({
           {'type': YAHOO_MAP_HYB, sphericalMercator: true}
         ),
         */
-        
+
         hili,
         markers,
         vectorLayer
-        
+
       ],
       dockedItems: [{
         xtype: 'toolbar',
@@ -834,7 +834,7 @@ Ext.application({
         items: toolbarItems
       }]
     });
-    
+
     overlay = Ext.create('GeoExt.tree.OverlayLayerContainer',{
       loader: {
         filter: function(record) {
@@ -848,7 +848,7 @@ Ext.application({
         }
       }
     });
-  
+
     store = Ext.create('Ext.data.TreeStore', {
       model: 'GeoExt.data.LayerTreeModel',
       root: {
@@ -866,7 +866,7 @@ Ext.application({
         //children: tree_child
       }
     });
-    
+
     ///////////////////////////////////
     // TREE
     ///////////////////////////////////
@@ -881,10 +881,10 @@ Ext.application({
       rootVisible: true,
       lines: false
     });
-    
+
     panel_west = Ext.create("Ext.Panel",{
       region: 'west',
-      title: '<span class="logo"><font color="red">DSIMAP</font><br />กรมสอบสวนคดีพิเศษ</span>',
+      title: '<span class="logo"><font color="red">DSIMAP</font><br />กรมสอบสวนคดีพิเศษ</span><div class="marquee">ข้อมูลภาพแผนที่ใช้เพื่อการตรวจสอบข้อมูลเบื้องต้นเท่านั้น ...</div>',
       width: 270,
       border: true,
       margins: '5 0 0 5',
@@ -905,7 +905,7 @@ Ext.application({
         }
       }
     });
-    
+
     earth = Ext.create('Ext.Panel', {
       region: 'east'
       ,id: 'id_east'
@@ -926,7 +926,7 @@ Ext.application({
         }
       ]
     });
-    
+
     Ext.create('Ext.Viewport', {
       layout: 'fit'
       ,hideBorders: true
@@ -937,8 +937,13 @@ Ext.application({
         ,items: [mapPanel, panel_west]
       }
     });
-      
+
     // Set BaseLayer to bing_road
     map.setBaseLayer(bing_road);
+
+    // Add marquee animation here
+    $('.marquee').marquee();
+
   }
+
 });
