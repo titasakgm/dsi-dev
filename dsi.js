@@ -186,79 +186,106 @@ Ext.application({
 
     function showWin(map, vectorLayer){
       var winname = "radii";
-      var win = new Ext.Window({
-        id: winname,
-        //height: 200,
-        width: 200,
-        constrain: true,
-        collapsible: true,
-        layout: 'fit',
-        title: 'ระบุรัศมีที่ต้องการ',
-        items: [{
-          xtype: 'combo',
-          allowBlank: false,
-          name: 'Radius',
-          forceSelection: true, //limit vals to list
-          editable: false, //prevent text being entered
-          fieldLabel: 'รัศมี',
-          labelWidth: 50,
-          emptyText: 'เลือกระยะที่ต้องการ...',
-          store: new Ext.data.SimpleStore({
-            fields: ['radius', 'value'],
-            data: [["100 เมตร", "100"], ["200 เมตร", "200"], ["500 เมตร", "500"], ["1 ก.ม.", "1000"], ["5 ก.ม.", "5000"], ["10 ก.ม.", "10000"]]
-          }),
-          displayField: 'radius',
-          valueField: 'value',
-          selectOnFocus: true,
-          mode: 'local',
-          triggerAction: 'all',
-          listeners: {
-            select: function(combo, record, index){
-              var style_red = {
+      
+        var win = new Ext.Window({
+          id: winname,
+          autoHeight: true,
+          width: 300,
+          constrain: true,
+          collapsible: true,
+          closable: true,
+          layout: 'form',
+          title: 'ระบุรัศมีที่ต้องการ',
+          items: [  
+            {
+              xtype: 'fieldset',
+              border: false,
+              defaults: {
+                labelWidth: 89,
+                anchor: '100%',
+                layout: {
+                  type: 'hbox',
+                  defaultMargins: {
+                    top: 0,
+                    right: 5,
+                    bottom: 0,
+                    left: 0
+                  }
+                }
+              },
+              items: [{
+                xtype: 'fieldcontainer',
+                fieldLabel: 'รัศมี',
+                labelWidth: 29,
+                combineErrors: false,
+                defaults: {
+                    hideLabel: true
+                },
+                items: [{
+                    id: 'radius',
+                    xtype: 'textfield',
+                    width: 150,
+                    allowBlank: false
+                }, {
+                    xtype: 'displayfield',
+                    value: 'เมตร'
+                }]
+              }]
+            },
+            {
+                xtype: 'displayfield',
+                value: '** ใส่ Buffer ที่ต้องการคั่นด้วยลูกน้ำเช่น 1000,2000,3000 (มีหน่วยเป็นเมตร)',
+                anchor: '100%'
+            }
+          ],
+          buttons: [{
+            text: "ยืนยัน",
+            handler: function(){
+              var style_color= [{
                 strokeColor: "#FF0000",
                 fillColor: "#FF7373",
                 fillOpacity: 0.5
-              };
-
-              var style_yellow = {
+              },{
                 strokeColor: "#FFE400",
                 fillColor: "#FFF073",
                 fillOpacity: 0.5
-              };
-
-              var style_green = {
+              },{
                 strokeColor: "#2BBE00",
                 fillColor: "#92ED6B",
                 fillOpacity: 0.5
-              };
+              }];
+              radius = Ext.getCmp("radius");
+              raduis_val = radius.getValue();
+              raduis_val = raduis_val.split(",");
+              $.each(raduis_val, function(idx, val){ 
+                val = Number(val.trim());
+                if(val && val != 0){
+                  
+                  var style = style_color[idx % 3];
 
-              var style = style_red;
+                  var radius = val;
+                  var feature = vectorLayer.features[vectorLayer.features.length - 1];
+                  if (feature) {
+                    var centroid = feature.geometry.getCentroid();
+                    var projection = map.getProjectionObject();
+                    var sides = 40;
+                    var new_geom = OpenLayers.Geometry.Polygon.createGeodesicPolygon(centroid, radius, sides, 45, projection);
+                    //var new_feature = new OpenLayers.Feature.Vector(new_geom);
 
-              var radius = record[0].data.value;
-              var feature = vectorLayer.features[vectorLayer.features.length - 1];
-              if (feature) {
-                var centroid = feature.geometry.getCentroid();
-                var projection = map.getProjectionObject();
-                var sides = 40;
-                var new_geom = OpenLayers.Geometry.Polygon.createGeodesicPolygon(centroid, radius, sides, 45, projection);
-                //var new_feature = new OpenLayers.Feature.Vector(new_geom);
+                    
+                    var new_feature = new OpenLayers.Feature.Vector(new_geom,null,style);
 
-                if (parseInt(radius) < 501) {
-                  style = style_red;
-                } else if (parseInt(radius) < 5001) {
-                  style = style_yellow;
-                } else {
-                  style = style_green;
+                    vectorLayer.addFeatures([new_feature]);
+                  }
+
+                  
+                  
                 }
-
-                var new_feature = new OpenLayers.Feature.Vector(new_geom,null,style);
-
-                vectorLayer.addFeatures([new_feature]);
-              }
+              });
             }
-          }
-        }]
-      });
+          }]
+        });
+      
       win.show();
       var mapId = map.div.id;
       win.alignTo(Ext.getDom(mapId), 'tr-tr', [-150, 6]);
@@ -272,7 +299,9 @@ Ext.application({
             showWin(map, vectorLayer);
           },
           featureunhighlighted: function() {
-            Ext.getCmp('radii').hide();
+            if(Ext.getCmp('radii')){
+              Ext.getCmp('radii').close();
+            }
             Ext.MessageBox.show({
               title:'คำแนะนำ',
               msg: 'ท่านสามารถกดปุ่ม <img src="img/delete.png"/> เพื่อลบการแสดงผล Buffer Zone',
@@ -586,33 +615,14 @@ Ext.application({
       disabled: true
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
-
     toolbarItems.push("->");
 
-    counterlabel = {
-      xtype: 'label',
-      text: 'Visit No:',
-      style:
-      {
-        'font-weight':'bold',
-        'labelAlign':'right',
-        'color': 'blue'
-      }
-    };
-    toolbarItems.push(counterlabel);
-
+    //////
     counter = {
-      id: 'counterBtn',
-      xtype: 'image',
-      src: 'http://c.statcounter.com/10066666/0/b98a074a/0/',
-      width: 75,
-      height: 14,
-      listeners: {
-        render: function(c){
-          c.getEl().on('click', function(e){
-            window.open('http://statcounter.com/p10066666/?guest=1','_blank');
-          }, c);
-        }
+      xtype: 'button',
+      text: 'Visit No.:<span id="id_cnt">00000000</span>',
+      handler: function(){
+        window.open("http://www.google.com/analytics/", "_blank");
       }
     };
     toolbarItems.push(counter);
@@ -629,7 +639,6 @@ Ext.application({
         comment: "This demo shows how to use GeoExt.PrintMapPanel"
       }
     });
-
     var btn_print = new Ext.Button({
       iconCls: 'print_preview',
       tooltip: 'ดูภาพ Preview และพิมพ์แผนที่ (กรุณา Zoom แผนที่ตามความต้องการอีกครั้ง)',
@@ -898,17 +907,6 @@ Ext.application({
     });
 
     ///////////////////////////////////
-    // STAT
-    ///////////////////////////////////
-    stat = Ext.create("Ext.Panel", {
-      border: true,
-      title: 'สถิติการเข้าชม',
-      width: 250,
-      html: "<a href='http://statcounter.com/p10066666/?guest=1' target='_blank'><img class='statcounter' src='http://c.statcounter.com/10066666/0/b98a074a/0/' alt='shopify site analytics'></a>"
-    })
-
-
-    ///////////////////////////////////
     // TREE
     ///////////////////////////////////
     tree = Ext.create('GeoExt.tree.Panel', {
@@ -982,9 +980,21 @@ Ext.application({
     // Set BaseLayer to bing_road
     map.setBaseLayer(bing_road);
 
+    //Ajax call Counter
+    Ext.Ajax.request({
+      url : 'rb/analytic.rb',
+      method:'GET',
+      scope : this,
+      success : function(resp){
+        cnt = resp.responseText.replace("\n", "");
+        $("#id_cnt").html(cnt);
+      }
+    });
+
     // Add marquee animation here
     $('.marquee').marquee();
 
   }
 
 });
+
