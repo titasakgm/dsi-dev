@@ -923,7 +923,7 @@ Ext.application({
 
     panel_west = Ext.create("Ext.Panel",{
       region: 'west',
-      title: '<span class="logo"><font color="red">DSIMAP</font><br />กรมสอบสวนคดีพิเศษ</span><div class="marquee">ข้อมูลภาพแผนที่ใช้เพื่อการตรวจสอบข้อมูลเบื้องต้นเท่านั้น ...</div>',
+      title: '<span class="logo"><font color="red">DSIMAP</font><br />กรมสอบสวนคดีพิเศษ</span>',
       width: 270,
       border: true,
       margins: '5 0 0 5',
@@ -973,7 +973,15 @@ Ext.application({
         layout: 'border'
         ,deferredRender: false
         //items: [mapPanel, panel_west, earth]
-        ,items: [mapPanel, panel_west]
+        ,items: [
+          mapPanel, 
+          panel_west,
+          {
+            xtype: "panel",
+            region: "south",
+            height: 30,
+            html: '<div class="marquee" style="font-size:20px;height:30px;">ข้อมูลภาพแผนที่ใช้เพื่อการตรวจสอบข้อมูลเบื้องต้นเท่านั้น ...</div>'
+        }]
       }
     });
 
@@ -992,7 +1000,7 @@ Ext.application({
     });
 
     // Add marquee animation here
-    $('.marquee').marquee();
+    $('.marquee').marquee({pauseOnHover: true, duration: 10000});
 
   }
 
