@@ -680,6 +680,27 @@ Ext.application({
     });
     toolbarItems.push(btn_measure_area);
 
+    action = Ext.create('GeoExt.Action',{
+      control: new OpenLayers.Control.SelectFeature(vectorLayer, {
+        hover: false,
+        eventListeners: {
+          featurehighlighted: function(evt) {
+            feature = evt.feature;
+            if(feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon"){
+              alert(getArea(feature.geometry.getArea()/1000));
+            }
+          }
+        }
+      }),
+      tooltip: 'แสดงขนาดพื้นที่ของวัตถุหลายเหลี่ยม',
+      map: map,
+      iconCls: 'select_feat',
+      toggleGroup: 'map',
+      allowDepress: true
+    });
+    toolbarItems.push(Ext.create('Ext.button.Button', action));
+
+
     // Add Lat/Long Button
     var llgrid = null;
     button = Ext.create('Ext.Button',{
@@ -711,6 +732,7 @@ Ext.application({
       }
     });
     toolbarItems.push(button);
+
 
     // Add UTM Button
     button = Ext.create('Ext.Button',{
