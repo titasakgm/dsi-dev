@@ -751,6 +751,82 @@ Ext.application({
     toolbarItems.push("-");
 
     action = Ext.create('GeoExt.Action',{
+      control: new OpenLayers.Control.SelectFeature(vectorLayer, {
+        hover: false,
+        eventListeners: {
+          featurehighlighted: function(evt) {
+            var feature = evt.feature;
+            var area = getArea(feature.geometry.getArea()/1000);
+            if(feature.geometry.CLASS_NAME == "OpenLayers.Geometry.Polygon"){
+              var points = feature.geometry.getVertices();
+              var polygon = [];
+              $.each(points, function(idx, point){
+                point.transform(merc, gcs);
+                polygon.push(point.x+","+point.y+",0");
+              });
+              polygon.push(polygon[0]);
+              var win = new Ext.Window({
+                autoHeight: true,
+                width: 500,
+                constrain: true,
+                collapsible: true,
+                closable: true,
+                layout: 'form',
+                defaults: {
+                  labelWidth: 80
+                },
+                title: 'ระบุรายละเอียด',
+                modal: true,
+                items: [{
+                  xtype: "textfield",
+                  id: "kml_title",
+                  fieldLabel: "หัวเรื่อง"
+                }, {
+                  xtype: "textarea",
+                  id: "kml_desc",
+                  fieldLabel: "รายละเอียด",
+                  height: 100,
+                  value: area
+                }, {
+                  xtype: "hiddenfield",
+                  id: "kml_polygon",
+                  value: polygon.join(" ")
+                }],
+                buttons: [{
+                  text: "ยืนยัน",
+                  handler: function(){
+                    title = Ext.getCmp("kml_title").getValue();
+                    desc = Ext.getCmp("kml_desc").getValue();
+                    polygon = Ext.getCmp("kml_polygon").getValue();
+                    params = "?title="+title;
+                    params += "&desc="+desc;
+                    params += "&polygon="+polygon;
+                    window.open("rb/export_kml.rb"+params, "_blank");
+                  }
+                }]
+              });
+              win.show();
+            }
+            
+
+
+
+
+
+          }
+        }
+      }),
+      tooltip: 'นำข้อมูลออกเป็น KML จากวัตถุหลายเหลี่ยมที่เลือก',
+      map: map,
+      iconCls: 'add_kml',
+      toggleGroup: 'map',
+      allowDepress: true
+    });
+    toolbarItems.push(Ext.create('Ext.button.Button', action));
+
+    toolbarItems.push("-");
+
+    action = Ext.create('GeoExt.Action',{
        tooltip: "Previous view",
        control: ctrl.previous,
        iconCls: 'back',
