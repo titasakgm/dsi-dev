@@ -1988,3 +1988,36 @@ var check_forest_info = function(layer,ll) {
     }
   });
 };
+
+function getArea(a) {
+  a = Number(a.toFixed(2));
+  areas = [
+    1600,
+    400,
+    4
+  ];
+  str_areas = [
+    ' ไร่ ',
+    ' งาน ',
+    ' ตารางวา ',
+    ' ตารางเมตร '
+  ]
+  calc_area = [
+  ];
+  for (i = 0; i < areas.length; i++) {
+
+    tmp = Number((a % areas[i]).toFixed(2));
+    calc_area[i] = Number(((a - tmp)/areas[i]).toFixed(2));
+    a = tmp;
+  }
+  calc_area.push(a);
+
+  str = '';
+  for (i = 0; i < calc_area.length; i++) {
+    if (calc_area[i] > 0) {
+      str += calc_area[i] + str_areas[i];
+    }
+  }
+  return str;
+}
+

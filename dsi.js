@@ -3,6 +3,7 @@ Ext.require([
   'Ext.layout.container.Border',
   'GeoExt.tree.Panel',
   'Ext.tree.plugin.TreeViewDragDrop',
+  'Ext.selection.CheckboxModel',
   'GeoExt.panel.Map',
   'GeoExt.tree.OverlayLayerContainer',
   'GeoExt.tree.BaseLayerContainer',
@@ -32,6 +33,19 @@ Ext.require([
   'GeoExt.data.proxy.Protocol'
 
 ]);
+
+Ext.define('Polygon', {
+  extend: 'Ext.data.Model',
+  fields: [
+    {
+      name: 'lat',
+      type: 'float'
+    }, {
+      name: 'lon',
+      type: 'float'
+    }
+  ]
+});
 
 Ext.application({
   name: 'Tree',
@@ -336,6 +350,120 @@ Ext.application({
       toggleGroup: 'map'
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
+
+    action = Ext.create('GeoExt.Action',{
+      tooltip: 'วาดรูปหลายเหลี่ยมบนแผนที่โดยสร้างจากจุดพิกัด',
+      iconCls: 'grid',
+      handler: function(){
+        var cellEditing = Ext.create('Ext.grid.plugin.CellEditing', {
+          clicksToEdit: 1,
+          listeners:{
+            edit: function( editor, context, eOpts ){
+              context.record.commit();
+            }
+          }
+        });
+        var sm = Ext.create('Ext.selection.CheckboxModel');
+        var store_polygon = Ext.create('Ext.data.ArrayStore', {
+          fields: [{
+            name: 'lat',
+            type: 'float'
+          }, {
+            name: 'lon',
+            type: 'float'
+          }],
+          data: []
+        });
+        var grid_polygon = Ext.create('Ext.grid.Panel', {
+          id: 'grid_polygon',
+          selModel: sm,
+          store: store_polygon,
+          height: 300,
+          plugins: [cellEditing],
+          columns: [{
+            text: 'ละติจูด',
+            flex: 1,
+            dataIndex: 'lat',
+            field: {
+              xtype: 'numberfield',
+              decimalPrecision: 6
+            }
+          }, {
+            text: 'ลองติจูด',
+            flex: 1,
+            dataIndex: 'lon',
+            field: {
+              xtype: 'numberfield',
+              decimalPrecision: 6
+            }
+          }],
+          viewConfig: {
+            stripeRows: true
+          },
+          tbar: [{
+            text: 'เพิ่มจุดพิกัด',
+            iconCls: "add",
+            handler: function() {
+              var r = Ext.ModelManager.create({lat: '', lon: ''}, 'Polygon');
+              var grid = Ext.getCmp("grid_polygon");
+              var len = grid.store.data.items.length;
+              store_polygon.insert(len, r);
+              cellEditing.startEditByPosition({row: len, column: 0});
+            }
+          }, {
+            text: "ลบจุดพิกัด",
+            iconCls: 'deleteallfeature',
+            handler: function(){
+              var grid = Ext.getCmp("grid_polygon");
+              var selection = grid.getSelectionModel().getSelection();
+              if (selection) {
+                grid.store.remove(selection);
+              }
+            }
+          }]
+        });
+
+        var win_polygon = new Ext.Window({
+          autoHeight: true,
+          width: 300,
+          constrain: true,
+          collapsible: true,
+          closable: true,
+          layout: 'fit',
+          title: 'ระบุจุดพิกัด',
+          modal: true,
+          items: [grid_polygon],
+          buttons: [{
+            text: "ยืนยัน",
+            handler: function(){
+              var grid = Ext.getCmp("grid_polygon");
+              var sitePoints = [];
+              datas = grid.store.data.items;
+              $.each(datas, function(idx, val){
+                var coord = val.data;
+                if(Number(coord.lon) && Number(coord.lat)){
+                  var point = new OpenLayers.Geometry.Point(coord.lon, coord.lat);
+                  point.transform(gcs, map.getProjectionObject());
+                  sitePoints.push(point);
+                }
+              });
+              if(sitePoints.length > 2){
+                sitePoints.push(sitePoints[0]);
+                var linearRing = new OpenLayers.Geometry.LinearRing(sitePoints);
+                var geometry = new OpenLayers.Geometry.Polygon([linearRing]);
+                var polygonFeature = new OpenLayers.Feature.Vector(geometry);
+                vectorLayer.addFeatures([polygonFeature]);
+                alert(getArea(polygonFeature.geometry.getArea()/1000));
+              }
+            }
+          }]
+        });
+        win_polygon.show();
+      }
+    });
+    toolbarItems.push(Ext.create('Ext.button.Button', action));
+
+
     toolbarItems.push("-");
 
     action = Ext.create('GeoExt.Action',{
