@@ -848,6 +848,9 @@ Ext.application({
               reader.onload = function(){
                 content = this.result.trim();
                 content = content.replace(/\n/g, "");
+                content = content.replace(/\<\?xml(.*?)\?\>/, "");
+                content = content.replace(/\<kml(.*?)\>/, "");
+                content = content.replace(/\<\/kml\>/, "");
                 if (window.DOMParser){
                   parser=new DOMParser();
                   xmlDoc=parser.parseFromString(content,"text/xml");
@@ -856,12 +859,31 @@ Ext.application({
                   xmlDoc.async=false;
                   xmlDoc.loadXML(content);
                 }
-                debugger;
-                coordinates = xmlDoc.getElementsByTagName("Placemark")[0].childNodes[7].childNodes[3].childNodes[1].childNodes[1];
-                if(coordinates){
-                  coordinates = coordinates.textContent.trim;
+                coordinate = xmlDoc.evaluate('/Document/Placemark/Polygon/outerBoundaryIs/LinearRing/coordinates', xmlDoc, null, 2, null);
+                coordinate = coordinate.stringValue.trim();
+                if(coordinate != ""){
+                  coordinate = coordinate.replace(/ {1,}/g, ' ');
+                  coordinate = coordinate.replace(/, |, /g, ',');
+                  coordinate = coordinate.split(" ");
+                  sitePoints = [];
+                  $.each(coordinate, function(idx, val){
+                    c = val.split(",");  
+                    if(Number(c[0]) && Number(c[1])){
+                      var point = new OpenLayers.Geometry.Point(c[0], c[1]);
+                      point.transform(gcs, map.getProjectionObject());
+                      sitePoints.push(point);
+                    }
+                  });
+                  if(sitePoints.length > 2){
+                    sitePoints.push(sitePoints[0]);
+                    var linearRing = new OpenLayers.Geometry.LinearRing(sitePoints);
+                    var geometry = new OpenLayers.Geometry.Polygon([linearRing]);
+                    var polygonFeature = new OpenLayers.Feature.Vector(geometry);
+                    vectorLayer.addFeatures([polygonFeature]);
+                  }
+                } else{
+                  alert("รูปแบบข้อมูลในไฟล์ KML ไม่ถูกต้อง");
                 }
-                debugger;
               };
               reader.readAsText(file);
             }
