@@ -807,12 +807,6 @@ Ext.application({
               });
               win.show();
             }
-            
-
-
-
-
-
           }
         }
       }),
@@ -821,6 +815,60 @@ Ext.application({
       iconCls: 'add_kml',
       toggleGroup: 'map',
       allowDepress: true
+    });
+    toolbarItems.push(Ext.create('Ext.button.Button', action));
+
+    action = Ext.create('Ext.Action',{
+      tooltip: 'นำเข้าไฟล์ KML',
+      iconCls: 'export_kml',
+      handler: function(){
+        var win_kml = new Ext.Window({
+          autoHeight: true,
+          width: 300,
+          constrain: true,
+          collapsible: true,
+          closable: true,
+          layout: 'form',
+          title: 'นำเข้าไฟล์ KML',
+          modal: true,
+          defaults: {
+            labelWidth: 50
+          },
+          items: [{
+            xtype: 'filefield'
+            ,id: 'kml_file'
+            ,fieldLabel: 'KML'
+          }],
+          buttons: [{
+            text: "ยืนยัน",
+            handler: function(){
+              files = document.getElementById("kml_file-fileInputEl");
+              file = files.files[0];
+              var reader = new FileReader();
+              reader.onload = function(){
+                content = this.result.trim();
+                content = content.replace(/\n/g, "");
+                if (window.DOMParser){
+                  parser=new DOMParser();
+                  xmlDoc=parser.parseFromString(content,"text/xml");
+                } else { // Internet Explorer
+                  xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+                  xmlDoc.async=false;
+                  xmlDoc.loadXML(content);
+                }
+                debugger;
+                coordinates = xmlDoc.getElementsByTagName("Placemark")[0].childNodes[7].childNodes[3].childNodes[1].childNodes[1];
+                if(coordinates){
+                  coordinates = coordinates.textContent.trim;
+                }
+                debugger;
+              };
+              reader.readAsText(file);
+            }
+          }]
+        });
+        win_kml.show();
+      }
     });
     toolbarItems.push(Ext.create('Ext.button.Button', action));
 
