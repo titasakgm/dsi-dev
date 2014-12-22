@@ -763,6 +763,7 @@ Ext.application({
               $.each(points, function(idx, point){
                 point.transform(merc, gcs);
                 polygon.push(point.x+","+point.y+",0");
+                point.transform(gcs, merc); 
               });
               polygon.push(polygon[0]);
               var win = new Ext.Window({
