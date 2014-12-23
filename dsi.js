@@ -123,33 +123,12 @@ Ext.application({
       tooltip: 'ไปยังตำแหน่งปัจจุบัน',
       iconCls: 'my_location',
       handler: function(){
-        Ext.Ajax.request({
-          url: 'rb/get_lonlat_from_ip.rb'
-          ,params: {
-            method: 'GET'
-            ,format: 'json'
-          }
-          ,failure: function(response, opts){
-            alert("get_lonlat_from_ip.rb > failure");
-            return false;
-          }
-          ,success: function(response, opts){
-            // var data = eval( '(' + response.responseText + ')' );
-            // No response from IE
-            var data = Ext.decode(response.responseText);
-            var lon = parseFloat(data.lon);
-            var lat = parseFloat(data.lat);
-
-            var p1 = new OpenLayers.LonLat(lon,lat);
-            p2 = p1.transform(gcs,merc);
-            map.setCenter(p2, 8);
-
-            var size = new OpenLayers.Size(48,48);
-            var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
-            var icon = new OpenLayers.Icon('img/my_locationx.png', size, offset);
-            markers.addMarker(new OpenLayers.Marker(p2,icon));
-          }
-        });
+        if(currentLocation){
+          markers.removeMarker(currentLocation);
+          currentLocation = null;
+        } else{
+          getLocation();
+        }
       },
       allowDepress: false
     });
@@ -199,6 +178,7 @@ Ext.application({
     toolbarItems.push(Ext.create('Ext.button.Button', action));
 
     function showWin(map, vectorLayer){
+      bufferLayer = [];
       var winname = "radii";
       
         var win = new Ext.Window({
@@ -255,6 +235,8 @@ Ext.application({
           buttons: [{
             text: "ยืนยัน",
             handler: function(){
+              vectorLayer.removeFeatures(bufferLayer);
+              bufferLayer = [];
               var style_color= [{
                 strokeColor: "#FF0000",
                 fillColor: "#FF7373",
@@ -270,13 +252,11 @@ Ext.application({
               }];
               radius = Ext.getCmp("radius");
               raduis_val = radius.getValue();
-              raduis_val = raduis_val.split(",");
+              raduis_val = raduis_val.split(",").map(Number).sort().reverse();
               $.each(raduis_val, function(idx, val){ 
-                val = Number(val.trim());
+                //val = Number(val.trim());
                 if(val && val != 0){
-                  
                   var style = style_color[idx % 3];
-
                   var radius = val;
                   var feature = vectorLayer.features[vectorLayer.features.length - 1];
                   if (feature) {
@@ -285,15 +265,10 @@ Ext.application({
                     var sides = 40;
                     var new_geom = OpenLayers.Geometry.Polygon.createGeodesicPolygon(centroid, radius, sides, 45, projection);
                     //var new_feature = new OpenLayers.Feature.Vector(new_geom);
-
-                    
                     var new_feature = new OpenLayers.Feature.Vector(new_geom,null,style);
-
                     vectorLayer.addFeatures([new_feature]);
+                    bufferLayer.push(new_feature);
                   }
-
-                  
-                  
                 }
               });
             }
@@ -305,7 +280,7 @@ Ext.application({
       win.alignTo(Ext.getDom(mapId), 'tr-tr', [-150, 6]);
     }
 
-    action = Ext.create('GeoExt.Action',{
+    buffer_action = Ext.create('GeoExt.Action',{
       control: new OpenLayers.Control.SelectFeature(vectorLayer, {
         hover: false,
         eventListeners: {
@@ -331,7 +306,7 @@ Ext.application({
       toggleGroup: 'map',
       allowDepress: true
     });
-    toolbarItems.push(Ext.create('Ext.button.Button', action));
+    toolbarItems.push(Ext.create('Ext.button.Button', buffer_action));
 
     action = Ext.create('GeoExt.Action',{
       control: new OpenLayers.Control.DrawFeature(vectorLayer, OpenLayers.Handler.Path),
@@ -680,7 +655,7 @@ Ext.application({
     });
     toolbarItems.push(btn_measure_area);
 
-    action = Ext.create('GeoExt.Action',{
+    area_action = Ext.create('GeoExt.Action',{
       control: new OpenLayers.Control.SelectFeature(vectorLayer, {
         hover: false,
         eventListeners: {
@@ -696,9 +671,12 @@ Ext.application({
       map: map,
       iconCls: 'select_feat',
       toggleGroup: 'map',
-      allowDepress: true
+      allowDepress: true,
+      handler: function(){
+        clearSelect();
+      }
     });
-    toolbarItems.push(Ext.create('Ext.button.Button', action));
+    toolbarItems.push(Ext.create('Ext.button.Button', area_action));
 
 
     // Add Lat/Long Button
@@ -750,7 +728,7 @@ Ext.application({
 
     toolbarItems.push("-");
 
-    action = Ext.create('GeoExt.Action',{
+    kml_action = Ext.create('GeoExt.Action',{
       control: new OpenLayers.Control.SelectFeature(vectorLayer, {
         hover: false,
         eventListeners: {
@@ -803,6 +781,7 @@ Ext.application({
                     params += "&desc="+desc;
                     params += "&polygon="+polygon;
                     window.open("rb/export_kml.rb"+params, "_blank");
+                    alert("นำข้อมูลออกเป็น KML เสร็จเรียบร้อย");
                   }
                 }]
               });
@@ -815,9 +794,12 @@ Ext.application({
       map: map,
       iconCls: 'add_kml',
       toggleGroup: 'map',
-      allowDepress: true
+      allowDepress: true,
+      handler: function(){
+        clearSelect();
+      }
     });
-    toolbarItems.push(Ext.create('Ext.button.Button', action));
+    toolbarItems.push(Ext.create('Ext.button.Button', kml_action));
 
     action = Ext.create('Ext.Action',{
       tooltip: 'นำเข้าไฟล์ KML',
@@ -1131,8 +1113,6 @@ Ext.application({
           {isBaseLayer: false,visibility: false, iconCls: 'dem'}
         ),
 
-        bing_road, bing_hybrid, bing_aerial,
-
         new OpenLayers.Layer.Google(
           "Google Hybrid",
           {type: google.maps.MapTypeId.HYBRID, numZoomLevels: 20,sphericalMercator: true, iconCls: 'google' }
@@ -1142,6 +1122,8 @@ Ext.application({
           {type: google.maps.MapTypeId.TERRAIN,sphericalMercator: true, iconCls: 'google' }
         ),
 
+        bing_road, bing_hybrid, bing_aerial,
+        
         utmgrid,
 
        /*
@@ -1302,4 +1284,5 @@ Ext.application({
   }
 
 });
+
 

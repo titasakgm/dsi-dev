@@ -43,6 +43,8 @@ var create_layer_markers, marker, markers, popup_marker;
 var create_layer_hili, hili;
 var create_layer_pointLayer, pointLayer, ctrl_popup_pointLayer, popup_pointLayer, del_feat_ctrl;
 var create_layer_kml, kml, select_kml;
+var bufferLayer = [];
+var currentLocation;
 
 google.load("earth", "1");
 
@@ -2021,3 +2023,30 @@ function getArea(a) {
   return str;
 }
 
+function clearSelect(){
+  kml_action.control.unselectAll();
+  buffer_action.control.unselectAll();
+  area_action.control.unselectAll()
+}
+
+
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(showPosition);
+  } else { 
+    alert("เบราเซอร์ ไม่สนับสนุนการแสดงที่อยู่ปัจจุบัน");
+  }
+}
+
+function showPosition(position) {
+  var p1 = new OpenLayers.LonLat(position.coords.longitude,
+                                 position.coords.latitude);
+  var p2 = p1.transform(gcs,merc);
+  map.setCenter(p2, 8);
+
+  var size = new OpenLayers.Size(48,48);
+  var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
+  var icon = new OpenLayers.Icon('img/my_locationx.png', size, offset);
+  currentLocation = new OpenLayers.Marker(p2,icon);
+  markers.addMarker(currentLocation);   
+}
